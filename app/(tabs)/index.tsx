@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useHabitStore } from '@/src/store/habitStore';
@@ -71,7 +72,7 @@ export default function TodayScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Date navigation */}
       <View style={[styles.dateHeader, { borderColor: colors.border }]}>
         <Pressable onPress={() => handleNavigateDay(-1)} hitSlop={12}>
@@ -82,11 +83,14 @@ export default function TodayScreen() {
             {isToday ? 'Today' : selectedDate}
           </Text>
         </Pressable>
-        {!isToday && (
-          <Pressable onPress={() => handleNavigateDay(1)} hitSlop={12}>
-            <MaterialCommunityIcons name="chevron-right" size={28} color={colors.text} />
-          </Pressable>
-        )}
+        <Pressable
+          onPress={() => handleNavigateDay(1)}
+          hitSlop={12}
+          disabled={isToday}
+          style={{ opacity: isToday ? 0.2 : 1 }}
+        >
+          <MaterialCommunityIcons name="chevron-right" size={28} color={colors.text} />
+        </Pressable>
       </View>
 
       {/* Progress card */}
@@ -122,7 +126,7 @@ export default function TodayScreen() {
       >
         <MaterialCommunityIcons name="plus" size={28} color={colors.card} />
       </Pressable>
-    </View>
+    </SafeAreaView>
   );
 }
 

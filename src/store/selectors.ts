@@ -3,16 +3,20 @@ import { isHabitScheduledForDate } from '../utils/dates';
 import { getCurrentStreak, getLongestStreak, getAvailableFreezes as calcAvailableFreezes } from '../utils/streak';
 import type { Habit } from '../types';
 
-/** Returns habits scheduled for the given date, filtered by frequency. */
+/** Returns habits scheduled for the given date, filtered by frequency and creation date. */
 export function selectTodayHabits(date: string): Habit[] {
   const { habits } = useHabitStore.getState();
-  return habits.filter((h) => isHabitScheduledForDate(h.frequency, date));
+  return habits.filter((h) =>
+    isHabitScheduledForDate(h.frequency, date) && date >= h.createdAt.slice(0, 10)
+  );
 }
 
 /** Returns completion progress for a given date. */
 export function selectTodayProgress(date: string): { completed: number; total: number } {
   const { habits, completions } = useHabitStore.getState();
-  const scheduled = habits.filter((h) => isHabitScheduledForDate(h.frequency, date));
+  const scheduled = habits.filter((h) =>
+    isHabitScheduledForDate(h.frequency, date) && date >= h.createdAt.slice(0, 10)
+  );
   const completed = scheduled.filter((h) => completions[h.id]?.has(date)).length;
   return { completed, total: scheduled.length };
 }

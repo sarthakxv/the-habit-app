@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { format, subMonths, addMonths, eachDayOfInterval, startOfMonth, endOfMonth } from 'date-fns';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useHabitStore } from '@/src/store/habitStore';
@@ -25,7 +26,9 @@ export default function CalendarScreen() {
 
     for (const day of days) {
       const dateStr = format(day, 'yyyy-MM-dd');
-      const scheduled = habits.filter((h) => isHabitScheduledForDate(h.frequency, dateStr));
+      const scheduled = habits.filter((h) =>
+        isHabitScheduledForDate(h.frequency, dateStr) && dateStr >= h.createdAt.slice(0, 10)
+      );
       if (scheduled.length === 0) {
         data[dateStr] = 0;
         continue;
@@ -39,7 +42,9 @@ export default function CalendarScreen() {
 
   const dayDetail = useMemo(() => {
     if (!selectedDate) return null;
-    const scheduled = habits.filter((h) => isHabitScheduledForDate(h.frequency, selectedDate));
+    const scheduled = habits.filter((h) =>
+      isHabitScheduledForDate(h.frequency, selectedDate) && selectedDate >= h.createdAt.slice(0, 10)
+    );
     return scheduled.map((h) => ({
       habit: h,
       completed: completions[h.id]?.has(selectedDate) ?? false,
@@ -67,8 +72,9 @@ export default function CalendarScreen() {
   const monthLabel = format(new Date(currentMonth + '-01'), 'MMMM yyyy');
 
   return (
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
     <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={styles.container}
       contentContainerStyle={styles.content}
     >
       {/* Month navigation */}
@@ -137,6 +143,7 @@ export default function CalendarScreen() {
         </View>
       )}
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
