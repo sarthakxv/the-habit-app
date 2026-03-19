@@ -1,3 +1,0 @@
-# the habit app
-
-wip
