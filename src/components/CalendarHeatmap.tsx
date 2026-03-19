@@ -58,21 +58,25 @@ export function CalendarHeatmap({
           const dateStr = format(date, 'yyyy-MM-dd');
           const pct = completionData[dateStr] ?? 0;
           const isToday = dateStr === todayStr;
+          const isFuture = dateStr > todayStr;
 
           return (
             <Pressable
               key={dateStr}
               style={styles.cell}
-              onPress={() => onDayPress?.(dateStr)}
+              onPress={() => !isFuture && onDayPress?.(dateStr)}
+              disabled={isFuture}
             >
               <View
                 style={[
                   styles.dayDot,
                   {
-                    backgroundColor: pct > 0
-                      ? accentColor
-                      : colors.background,
-                    opacity: pct > 0 ? 0.3 + pct * 0.7 : 1,
+                    backgroundColor: isFuture
+                      ? colors.background
+                      : pct > 0
+                        ? accentColor
+                        : colors.background,
+                    opacity: isFuture ? 0.35 : pct > 0 ? 0.3 + pct * 0.7 : 1,
                     borderColor: isToday ? accentColor : 'transparent',
                     borderWidth: isToday ? 2 : 0,
                   },
@@ -82,8 +86,13 @@ export function CalendarHeatmap({
                   style={[
                     styles.dayNumber,
                     {
-                      color: pct > 0 ? '#fff' : colors.textSecondary,
+                      color: isFuture
+                        ? colors.textSecondary
+                        : pct > 0
+                          ? '#fff'
+                          : colors.textSecondary,
                       fontWeight: isToday ? '900' : '500',
+                      opacity: isFuture ? 0.4 : 1,
                     },
                   ]}
                 >

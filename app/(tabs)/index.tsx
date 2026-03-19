@@ -38,10 +38,14 @@ export default function TodayScreen() {
   }, [selectedDate, toggleCompletion]);
 
   const handleNavigateDay = useCallback((direction: -1 | 1) => {
+    if (direction === 1 && isToday) return;
     const current = parseISO(selectedDate);
     const next = direction === -1 ? subDays(current, 1) : addDays(current, 1);
-    setSelectedDate(formatDate(next));
-  }, [selectedDate]);
+    const nextStr = formatDate(next);
+    // Never go past today
+    if (nextStr > getToday()) return;
+    setSelectedDate(nextStr);
+  }, [selectedDate, isToday]);
 
   const handleAddHabit = useCallback(() => {
     if (habits.length >= 15) return;
@@ -78,9 +82,11 @@ export default function TodayScreen() {
             {isToday ? 'Today' : selectedDate}
           </Text>
         </Pressable>
-        <Pressable onPress={() => handleNavigateDay(1)} hitSlop={12}>
-          <MaterialCommunityIcons name="chevron-right" size={28} color={colors.text} />
-        </Pressable>
+        {!isToday && (
+          <Pressable onPress={() => handleNavigateDay(1)} hitSlop={12}>
+            <MaterialCommunityIcons name="chevron-right" size={28} color={colors.text} />
+          </Pressable>
+        )}
       </View>
 
       {/* Progress card */}
@@ -93,7 +99,7 @@ export default function TodayScreen() {
 
       {/* Section label */}
       <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-        TODAY'S TASKS
+        {isToday ? "TODAY'S TASKS" : 'TASKS'}
       </Text>
 
       {/* Habit list */}

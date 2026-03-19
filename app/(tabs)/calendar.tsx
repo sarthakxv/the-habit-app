@@ -51,10 +51,18 @@ export default function CalendarScreen() {
     setSelectedDate(null);
   }, []);
 
+  const currentMonthStr = format(new Date(), 'yyyy-MM');
+  const isCurrentMonth = currentMonth === currentMonthStr;
+
   const handleNextMonth = useCallback(() => {
-    setCurrentMonth((m) => format(addMonths(new Date(m + '-01'), 1), 'yyyy-MM'));
+    setCurrentMonth((m) => {
+      const next = format(addMonths(new Date(m + '-01'), 1), 'yyyy-MM');
+      // Don't navigate past the current month
+      if (next > currentMonthStr) return m;
+      return next;
+    });
     setSelectedDate(null);
-  }, []);
+  }, [currentMonthStr]);
 
   const monthLabel = format(new Date(currentMonth + '-01'), 'MMMM yyyy');
 
@@ -69,9 +77,11 @@ export default function CalendarScreen() {
           <MaterialCommunityIcons name="chevron-left" size={28} color={colors.text} />
         </Pressable>
         <Text style={[styles.monthText, { color: colors.text }]}>{monthLabel}</Text>
-        <Pressable onPress={handleNextMonth} hitSlop={12}>
-          <MaterialCommunityIcons name="chevron-right" size={28} color={colors.text} />
-        </Pressable>
+        {!isCurrentMonth && (
+          <Pressable onPress={handleNextMonth} hitSlop={12}>
+            <MaterialCommunityIcons name="chevron-right" size={28} color={colors.text} />
+          </Pressable>
+        )}
       </View>
 
       {/* Heatmap */}

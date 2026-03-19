@@ -110,7 +110,7 @@ export default function SettingsScreen() {
           { backgroundColor: colors.card, borderColor: colors.border },
         ]}
       >
-        <Text style={[styles.info, { color: colors.text }]}>The Habit App v1.0.0</Text>
+        <Text style={[styles.info, { color: colors.text }]}>The Habit App v0.1.0</Text>
         <Text style={[styles.infoSub, { color: colors.textSecondary }]}>
           Track habits, build streaks, stay consistent.
         </Text>
