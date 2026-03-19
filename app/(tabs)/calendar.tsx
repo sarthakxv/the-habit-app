@@ -1,18 +1,22 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { format, subMonths, addMonths, eachDayOfInterval, startOfMonth, endOfMonth } from 'date-fns';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useHabitStore } from '@/src/store/habitStore';
 import { isHabitScheduledForDate } from '@/src/utils/dates';
 import { CalendarHeatmap } from '@/src/components/CalendarHeatmap';
+import { HabitIcon } from '@/src/components/HabitIcon';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { neo } from '@/src/constants/theme';
 
 export default function CalendarScreen() {
+  const colors = useThemeColors();
   const [currentMonth, setCurrentMonth] = useState(format(new Date(), 'yyyy-MM'));
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const habits = useHabitStore((s) => s.habits);
   const completions = useHabitStore((s) => s.completions);
 
-  // Compute completion percentage per day for the month
   const completionData = useMemo(() => {
     const monthStart = startOfMonth(new Date(currentMonth + '-01'));
     const monthEnd = endOfMonth(monthStart);
@@ -33,7 +37,6 @@ export default function CalendarScreen() {
     return data;
   }, [currentMonth, habits, completions]);
 
-  // Day detail: which habits were completed/missed
   const dayDetail = useMemo(() => {
     if (!selectedDate) return null;
     const scheduled = habits.filter((h) => isHabitScheduledForDate(h.frequency, selectedDate));
@@ -56,15 +59,18 @@ export default function CalendarScreen() {
   const monthLabel = format(new Date(currentMonth + '-01'), 'MMMM yyyy');
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+    >
       {/* Month navigation */}
       <View style={styles.monthHeader}>
         <Pressable onPress={handlePrevMonth} hitSlop={12}>
-          <Text style={styles.arrow}>‹</Text>
+          <MaterialCommunityIcons name="chevron-left" size={28} color={colors.text} />
         </Pressable>
-        <Text style={styles.monthText}>{monthLabel}</Text>
+        <Text style={[styles.monthText, { color: colors.text }]}>{monthLabel}</Text>
         <Pressable onPress={handleNextMonth} hitSlop={12}>
-          <Text style={styles.arrow}>›</Text>
+          <MaterialCommunityIcons name="chevron-right" size={28} color={colors.text} />
         </Pressable>
       </View>
 
@@ -77,20 +83,44 @@ export default function CalendarScreen() {
 
       {/* Day detail */}
       {selectedDate && dayDetail && (
-        <View style={styles.detail}>
-          <Text style={styles.detailTitle}>{selectedDate}</Text>
+        <View
+          style={[
+            styles.detail,
+            neo.shadow,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.detailTitle, { color: colors.text }]}>{selectedDate}</Text>
           {dayDetail.length === 0 ? (
-            <Text style={styles.detailEmpty}>No habits scheduled</Text>
+            <Text style={[styles.detailEmpty, { color: colors.textSecondary }]}>
+              No habits scheduled
+            </Text>
           ) : (
             dayDetail.map(({ habit, completed }) => (
-              <View key={habit.id} style={styles.detailRow}>
-                <Text style={styles.detailIcon}>{habit.icon}</Text>
-                <Text style={[styles.detailName, completed && styles.detailCompleted]}>
+              <View key={habit.id} style={[styles.detailRow, { borderBottomColor: colors.border + '30' }]}>
+                <HabitIcon icon={habit.icon} size={32} />
+                <Text
+                  style={[
+                    styles.detailName,
+                    { color: colors.text },
+                    completed && { textDecorationLine: 'line-through', opacity: 0.5 },
+                  ]}
+                >
                   {habit.name}
                 </Text>
-                <Text style={completed ? styles.checkmark : styles.miss}>
-                  {completed ? '✓' : '✗'}
-                </Text>
+                <View
+                  style={[
+                    styles.statusPill,
+                    {
+                      backgroundColor: completed ? colors.pastelGreen : colors.pastelPink,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.statusText, { color: colors.text }]}>
+                    {completed ? 'DONE' : 'MISSED'}
+                  </Text>
+                </View>
               </View>
             ))
           )}
@@ -103,7 +133,6 @@ export default function CalendarScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     paddingBottom: 40,
@@ -115,58 +144,47 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 20,
   },
-  arrow: {
-    fontSize: 28,
-    color: '#666',
-    paddingHorizontal: 8,
-  },
   monthText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 20,
+    fontWeight: '800',
   },
   detail: {
     marginTop: 16,
     marginHorizontal: 16,
     padding: 16,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 12,
+    borderRadius: neo.borderRadius,
+    borderWidth: neo.borderWidth,
   },
   detailTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 12,
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 14,
   },
   detailEmpty: {
-    color: '#999',
     fontSize: 14,
+    fontWeight: '500',
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 6,
-  },
-  detailIcon: {
-    fontSize: 18,
-    marginRight: 8,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    gap: 10,
   },
   detailName: {
     flex: 1,
     fontSize: 15,
-    color: '#333',
+    fontWeight: '600',
   },
-  detailCompleted: {
-    textDecorationLine: 'line-through',
-    color: '#999',
+  statusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1.5,
   },
-  checkmark: {
-    fontSize: 16,
-    color: '#4CAF50',
-    fontWeight: 'bold',
-  },
-  miss: {
-    fontSize: 16,
-    color: '#F44336',
+  statusText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
 });

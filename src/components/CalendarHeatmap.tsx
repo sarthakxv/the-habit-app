@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, subMonths, addMonths } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
+import { neo } from '../constants/theme';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 interface CalendarHeatmapProps {
-  /** YYYY-MM format for the displayed month */
   month: string;
-  /** Map of YYYY-MM-DD -> completion percentage (0 to 1) */
   completionData: Record<string, number>;
   accentColor?: string;
   onDayPress?: (date: string) => void;
@@ -16,40 +16,48 @@ const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 export function CalendarHeatmap({
   month,
   completionData,
-  accentColor = '#4CAF50',
+  accentColor = '#1B1A2E',
   onDayPress,
 }: CalendarHeatmapProps) {
+  const colors = useThemeColors();
+
   const { days, startPadding } = useMemo(() => {
     const monthStart = startOfMonth(new Date(month + '-01'));
     const monthEnd = endOfMonth(monthStart);
     const allDays = eachDayOfInterval({ start: monthStart, end: monthEnd });
-    const startPad = getDay(monthStart); // 0=Sunday
+    const startPad = getDay(monthStart);
     return { days: allDays, startPadding: startPad };
   }, [month]);
 
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        neo.shadow,
+        { backgroundColor: colors.card, borderColor: colors.border },
+      ]}
+    >
       {/* Day of week headers */}
       <View style={styles.row}>
         {DAY_LABELS.map((label, i) => (
           <View key={i} style={styles.cell}>
-            <Text style={styles.dayLabel}>{label}</Text>
+            <Text style={[styles.dayLabel, { color: colors.textSecondary }]}>{label}</Text>
           </View>
         ))}
       </View>
 
       {/* Calendar grid */}
       <View style={styles.grid}>
-        {/* Empty cells for padding */}
         {Array.from({ length: startPadding }).map((_, i) => (
           <View key={`pad-${i}`} style={styles.cell} />
         ))}
 
-        {/* Day cells */}
         {days.map((date) => {
           const dateStr = format(date, 'yyyy-MM-dd');
           const pct = completionData[dateStr] ?? 0;
-          const opacity = pct === 0 ? 0 : 0.2 + pct * 0.8; // 0.2 to 1.0 range
+          const isToday = dateStr === todayStr;
 
           return (
             <Pressable
@@ -60,12 +68,25 @@ export function CalendarHeatmap({
               <View
                 style={[
                   styles.dayDot,
-                  pct > 0
-                    ? { backgroundColor: accentColor, opacity }
-                    : styles.dayEmpty,
+                  {
+                    backgroundColor: pct > 0
+                      ? accentColor
+                      : colors.background,
+                    opacity: pct > 0 ? 0.3 + pct * 0.7 : 1,
+                    borderColor: isToday ? accentColor : 'transparent',
+                    borderWidth: isToday ? 2 : 0,
+                  },
                 ]}
               >
-                <Text style={[styles.dayNumber, pct > 0 && styles.dayNumberFilled]}>
+                <Text
+                  style={[
+                    styles.dayNumber,
+                    {
+                      color: pct > 0 ? '#fff' : colors.textSecondary,
+                      fontWeight: isToday ? '900' : '500',
+                    },
+                  ]}
+                >
                   {format(date, 'd')}
                 </Text>
               </View>
@@ -79,7 +100,10 @@ export function CalendarHeatmap({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 8,
+    marginHorizontal: 16,
+    padding: 14,
+    borderWidth: neo.borderWidth,
+    borderRadius: neo.borderRadius,
   },
   row: {
     flexDirection: 'row',
@@ -97,25 +121,16 @@ const styles = StyleSheet.create({
   },
   dayLabel: {
     fontSize: 12,
-    color: '#999',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   dayDot: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 8,
+    width: '88%',
+    height: '88%',
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dayEmpty: {
-    backgroundColor: '#f0f0f0',
-  },
   dayNumber: {
     fontSize: 13,
-    color: '#666',
-  },
-  dayNumberFilled: {
-    color: '#fff',
-    fontWeight: '600',
   },
 });

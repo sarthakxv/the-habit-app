@@ -1,5 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { neo } from '../constants/theme';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 /** Day labels mapped to getDay() numbers: [1,2,3,4,5,6,0] = M T W T F S S */
 const DAYS = [
@@ -18,6 +20,8 @@ interface DaySelectorProps {
 }
 
 export function DaySelector({ selected, onToggle }: DaySelectorProps) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.container}>
       {DAYS.map(({ label, value }) => {
@@ -25,10 +29,21 @@ export function DaySelector({ selected, onToggle }: DaySelectorProps) {
         return (
           <Pressable
             key={`${label}-${value}`}
-            style={[styles.day, isSelected && styles.daySelected]}
+            style={[
+              styles.day,
+              {
+                backgroundColor: isSelected ? colors.text : colors.card,
+                borderColor: colors.border,
+              },
+            ]}
             onPress={() => onToggle(value)}
           >
-            <Text style={[styles.label, isSelected && styles.labelSelected]}>
+            <Text
+              style={[
+                styles.label,
+                { color: isSelected ? colors.card : colors.text },
+              ]}
+            >
               {label}
             </Text>
           </Pressable>
@@ -41,26 +56,19 @@ export function DaySelector({ selected, onToggle }: DaySelectorProps) {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 6,
-    paddingVertical: 8,
+    gap: 8,
+    paddingVertical: 10,
   },
   day: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f0f0f0',
-  },
-  daySelected: {
-    backgroundColor: '#4CAF50',
+    borderWidth: 2,
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
-  },
-  labelSelected: {
-    color: '#fff',
+    fontWeight: '800',
   },
 });

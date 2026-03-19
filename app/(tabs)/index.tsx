@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useHabitStore } from '@/src/store/habitStore';
 import { selectTodayHabits, selectTodayProgress, selectIsCompletedToday, selectCurrentStreak } from '@/src/store/selectors';
 import { getToday, formatDate } from '@/src/utils/dates';
@@ -9,12 +10,14 @@ import { HabitCard } from '@/src/components/HabitCard';
 import { ProgressRing } from '@/src/components/ProgressRing';
 import { EmptyState } from '@/src/components/EmptyState';
 import { PerfectDayBanner } from '@/src/components/PerfectDayBanner';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { neo } from '@/src/constants/theme';
 import { subDays, addDays, parseISO } from 'date-fns';
 import type { Habit } from '@/src/types';
 
 export default function TodayScreen() {
   const router = useRouter();
-  const isDark = useColorScheme() === 'dark';
+  const colors = useThemeColors();
   const [selectedDate, setSelectedDate] = useState(getToday());
   const habits = useHabitStore((s) => s.habits);
   const completions = useHabitStore((s) => s.completions);
@@ -30,7 +33,7 @@ export default function TodayScreen() {
       const db = getDatabase();
       await toggleCompletion(db, habitId, selectedDate);
     } catch {
-      // TODO: Show toast "Something went wrong, try again"
+      // TODO: Show toast
     }
   }, [selectedDate, toggleCompletion]);
 
@@ -41,10 +44,7 @@ export default function TodayScreen() {
   }, [selectedDate]);
 
   const handleAddHabit = useCallback(() => {
-    if (habits.length >= 15) {
-      // TODO: Show toast "Delete a habit to add a new one"
-      return;
-    }
+    if (habits.length >= 15) return;
     router.push('/habit/new');
   }, [habits.length, router]);
 
@@ -67,29 +67,34 @@ export default function TodayScreen() {
   }
 
   return (
-    <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#fafafa' }]}>
-      {/* Date header */}
-      <View style={styles.dateHeader}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Date navigation */}
+      <View style={[styles.dateHeader, { borderColor: colors.border }]}>
         <Pressable onPress={() => handleNavigateDay(-1)} hitSlop={12}>
-          <Text style={[styles.arrow, { color: isDark ? '#aaa' : '#666' }]}>‹</Text>
+          <MaterialCommunityIcons name="chevron-left" size={28} color={colors.text} />
         </Pressable>
         <Pressable onPress={() => setSelectedDate(getToday())}>
-          <Text style={[styles.dateText, { color: isDark ? '#fff' : '#333' }]}>
+          <Text style={[styles.dateText, { color: colors.text }]}>
             {isToday ? 'Today' : selectedDate}
           </Text>
         </Pressable>
         <Pressable onPress={() => handleNavigateDay(1)} hitSlop={12}>
-          <Text style={[styles.arrow, { color: isDark ? '#aaa' : '#666' }]}>›</Text>
+          <MaterialCommunityIcons name="chevron-right" size={28} color={colors.text} />
         </Pressable>
       </View>
 
-      {/* Progress */}
+      {/* Progress card */}
       <View style={styles.progressContainer}>
         <ProgressRing completed={progress.completed} total={progress.total} />
       </View>
 
       {/* Perfect day banner */}
       {isPerfectDay && <PerfectDayBanner />}
+
+      {/* Section label */}
+      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+        TODAY'S TASKS
+      </Text>
 
       {/* Habit list */}
       <FlatList
@@ -101,8 +106,15 @@ export default function TodayScreen() {
       />
 
       {/* FAB */}
-      <Pressable style={styles.fab} onPress={handleAddHabit}>
-        <Text style={styles.fabText}>+</Text>
+      <Pressable
+        style={[
+          styles.fab,
+          neo.shadow,
+          { backgroundColor: colors.text, borderColor: colors.border },
+        ]}
+        onPress={handleAddHabit}
+      >
+        <MaterialCommunityIcons name="plus" size={28} color={colors.card} />
       </Pressable>
     </View>
   );
@@ -116,25 +128,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 14,
     gap: 20,
   },
-  arrow: {
-    fontSize: 28,
-    color: '#666',
-    paddingHorizontal: 8,
-  },
   dateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: 20,
+    fontWeight: '800',
   },
   progressContainer: {
-    alignItems: 'center',
     paddingVertical: 8,
   },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginHorizontal: 20,
+    marginTop: 16,
+    marginBottom: 8,
+  },
   list: {
-    paddingTop: 8,
+    paddingTop: 4,
     paddingBottom: 100,
   },
   fab: {
@@ -144,18 +157,8 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#4CAF50',
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  fabText: {
-    fontSize: 28,
-    color: '#fff',
-    lineHeight: 30,
   },
 });

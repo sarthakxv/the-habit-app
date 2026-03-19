@@ -1,6 +1,9 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { HABIT_COLORS } from '../constants/colors';
+import { neo } from '../constants/theme';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 interface ColorPickerProps {
   selected: string;
@@ -8,6 +11,8 @@ interface ColorPickerProps {
 }
 
 export function ColorPicker({ selected, onSelect }: ColorPickerProps) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.container}>
       {HABIT_COLORS.map((color) => (
@@ -16,10 +21,17 @@ export function ColorPicker({ selected, onSelect }: ColorPickerProps) {
           style={[
             styles.swatch,
             { backgroundColor: color },
-            selected === color && styles.selected,
+            selected === color && {
+              borderWidth: 3,
+              borderColor: colors.border,
+            },
           ]}
           onPress={() => onSelect(color)}
-        />
+        >
+          {selected === color && (
+            <MaterialCommunityIcons name="check" size={18} color="#fff" />
+          )}
+        </Pressable>
       ))}
     </View>
   );
@@ -33,12 +45,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   swatch: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-  },
-  selected: {
-    borderWidth: 3,
-    borderColor: '#333',
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

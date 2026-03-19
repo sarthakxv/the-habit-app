@@ -1,6 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { HABIT_ICONS } from '../constants/icons';
+import { HabitIcon } from './HabitIcon';
+import { neo } from '../constants/theme';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 interface IconPickerProps {
   selected: string;
@@ -8,15 +11,24 @@ interface IconPickerProps {
 }
 
 export function IconPicker({ selected, onSelect }: IconPickerProps) {
+  const colors = useThemeColors();
+
   return (
     <View style={styles.container}>
       {HABIT_ICONS.map((icon) => (
         <Pressable
           key={icon}
-          style={[styles.item, selected === icon && styles.selected]}
+          style={[
+            styles.item,
+            { borderColor: 'transparent' },
+            selected === icon && {
+              borderColor: colors.border,
+              backgroundColor: colors.pastelLavender,
+            },
+          ]}
           onPress={() => onSelect(icon)}
         >
-          <Text style={styles.icon}>{icon}</Text>
+          <HabitIcon icon={icon} size={36} />
         </Pressable>
       ))}
     </View>
@@ -31,19 +43,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   item: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
+    width: 52,
+    height: 52,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#f0f0f0',
-  },
-  selected: {
-    backgroundColor: '#E8F5E9',
     borderWidth: 2,
-    borderColor: '#4CAF50',
-  },
-  icon: {
-    fontSize: 24,
   },
 });

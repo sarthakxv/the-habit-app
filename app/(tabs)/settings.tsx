@@ -2,11 +2,15 @@ import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { Paths, File } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useHabitStore } from '@/src/store/habitStore';
 import { getDatabase } from '@/src/hooks/useBootLoader';
 import { cancelAllNotifications } from '@/src/services/notificationService';
+import { useThemeColors } from '@/src/hooks/useThemeColors';
+import { neo } from '@/src/constants/theme';
 
 export default function SettingsScreen() {
+  const colors = useThemeColors();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const habits = useHabitStore((s) => s.habits);
   const completions = useHabitStore((s) => s.completions);
@@ -49,28 +53,68 @@ export default function SettingsScreen() {
   }, [habits, completions, freezes]);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={styles.content}
+    >
       {/* Notifications */}
-      <Text style={styles.sectionTitle}>Notifications</Text>
-      <View style={styles.row}>
-        <Text style={styles.rowLabel}>Enable reminders</Text>
-        <Switch
-          value={notificationsEnabled}
-          onValueChange={handleNotificationToggle}
-          trackColor={{ true: '#4CAF50' }}
-        />
+      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+        NOTIFICATIONS
+      </Text>
+      <View
+        style={[
+          styles.card,
+          neo.shadow,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <View style={styles.row}>
+          <View style={styles.rowLeft}>
+            <MaterialCommunityIcons name="bell-outline" size={22} color={colors.text} />
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Enable reminders</Text>
+          </View>
+          <Switch
+            value={notificationsEnabled}
+            onValueChange={handleNotificationToggle}
+            trackColor={{ true: colors.text, false: colors.textSecondary + '40' }}
+            thumbColor="#fff"
+          />
+        </View>
       </View>
 
       {/* Data */}
-      <Text style={styles.sectionTitle}>Data</Text>
-      <Pressable style={styles.button} onPress={handleExportJSON}>
-        <Text style={styles.buttonText}>Export as JSON</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+        DATA
+      </Text>
+      <Pressable
+        style={[
+          styles.card,
+          styles.buttonCard,
+          neo.shadow,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+        onPress={handleExportJSON}
+      >
+        <MaterialCommunityIcons name="export-variant" size={22} color={colors.text} />
+        <Text style={[styles.buttonText, { color: colors.text }]}>Export as JSON</Text>
       </Pressable>
 
       {/* App Info */}
-      <Text style={styles.sectionTitle}>About</Text>
-      <Text style={styles.info}>The Habit App v1.0.0</Text>
-      <Text style={styles.infoSub}>Track habits, build streaks, stay consistent.</Text>
+      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+        ABOUT
+      </Text>
+      <View
+        style={[
+          styles.card,
+          neo.shadow,
+          { backgroundColor: colors.card, borderColor: colors.border },
+        ]}
+      >
+        <Text style={[styles.info, { color: colors.text }]}>The Habit App v1.0.0</Text>
+        <Text style={[styles.infoSub, { color: colors.textSecondary }]}>
+          Track habits, build streaks, stay consistent.
+        </Text>
+      </View>
     </ScrollView>
   );
 }
@@ -78,7 +122,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   content: {
     padding: 20,
@@ -86,43 +129,47 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#999',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    fontWeight: '800',
+    letterSpacing: 1,
     marginTop: 28,
     marginBottom: 12,
+    marginLeft: 4,
+  },
+  card: {
+    borderWidth: neo.borderWidth,
+    borderRadius: neo.borderRadius,
+    padding: 18,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#eee',
+  },
+  rowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   rowLabel: {
     fontSize: 16,
-    color: '#333',
+    fontWeight: '600',
   },
-  button: {
-    backgroundColor: '#f0f0f0',
-    paddingVertical: 14,
-    borderRadius: 10,
+  buttonCard: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: '700',
   },
   info: {
-    fontSize: 15,
-    color: '#333',
+    fontSize: 16,
+    fontWeight: '700',
   },
   infoSub: {
     fontSize: 14,
-    color: '#999',
+    fontWeight: '500',
     marginTop: 4,
   },
 });

@@ -1,5 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { neo } from '../constants/theme';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 interface ProgressRingProps {
   completed: number;
@@ -7,38 +9,82 @@ interface ProgressRingProps {
   size?: number;
 }
 
-/** Simple progress display. Uses text for V1; can be replaced with
- * an animated SVG ring in Step 8 (animations). */
-export function ProgressRing({ completed, total, size = 80 }: ProgressRingProps) {
+/** Progress display card with neo-brutalist styling.
+ * Shows completed/total with a bold progress bar. */
+export function ProgressRing({ completed, total, size = 100 }: ProgressRingProps) {
+  const colors = useThemeColors();
   const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
   const isAllDone = total > 0 && completed === total;
 
   return (
-    <View style={[styles.container, { width: size, height: size, borderRadius: size / 2 }]}>
-      <Text style={[styles.count, isAllDone && styles.countDone]}>
-        {completed}/{total}
+    <View
+      style={[
+        styles.container,
+        neo.shadow,
+        { backgroundColor: colors.card, borderColor: colors.border },
+      ]}
+    >
+      <Text style={[styles.motivational, { color: colors.textSecondary }]}>
+        {isAllDone
+          ? "You're nearly there. Keep Going!"
+          : total === 0
+            ? 'Add habits to start tracking'
+            : `${completed} of ${total} completed`}
       </Text>
-      <Text style={styles.label}>{percentage}%</Text>
+      <Text style={[styles.count, { color: colors.text }]}>
+        {completed}/{total} goals completed
+      </Text>
+
+      {/* Progress bar */}
+      <View style={[styles.barTrack, { backgroundColor: colors.border + '20' }]}>
+        <View
+          style={[
+            styles.barFill,
+            {
+              width: `${percentage}%`,
+              backgroundColor: colors.text,
+            },
+          ]}
+        />
+      </View>
+      <Text style={[styles.percentage, { color: colors.textSecondary }]}>
+        {percentage}%
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f0f0f0',
+    borderWidth: neo.borderWidth,
+    borderRadius: neo.borderRadius,
+    marginHorizontal: 16,
+    padding: 20,
+  },
+  motivational: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
   },
   count: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 14,
   },
-  countDone: {
-    color: '#4CAF50',
+  barTrack: {
+    height: 12,
+    borderRadius: 6,
+    overflow: 'hidden',
   },
-  label: {
-    fontSize: 12,
-    color: '#888',
+  barFill: {
+    height: '100%',
+    borderRadius: 6,
+    minWidth: 4,
+  },
+  percentage: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 6,
+    textAlign: 'right',
   },
 });

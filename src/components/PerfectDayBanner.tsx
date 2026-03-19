@@ -1,34 +1,41 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { neo } from '../constants/theme';
+import { useThemeColors } from '../hooks/useThemeColors';
 
 export function PerfectDayBanner() {
+  const colors = useThemeColors();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.emoji}>🎉</Text>
-      <Text style={styles.text}>All done for today!</Text>
+    <View
+      style={[
+        styles.container,
+        neo.shadowSm,
+        { backgroundColor: colors.pastelGreen, borderColor: colors.border },
+      ]}
+    >
+      <MaterialCommunityIcons name="party-popper" size={22} color={colors.text} />
+      <Text style={[styles.text, { color: colors.text }]}>All done for today!</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#E8F5E9',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
     marginHorizontal: 16,
     marginVertical: 8,
-    borderRadius: 12,
+    borderRadius: 14,
+    borderWidth: 2,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  emoji: {
-    fontSize: 20,
-    marginRight: 8,
+    gap: 10,
   },
   text: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#2E7D32',
+    fontWeight: '800',
   },
 });

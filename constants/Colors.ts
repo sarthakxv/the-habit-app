@@ -1,19 +1,17 @@
-const tintColorLight = '#4CAF50';
-const tintColorDark = '#81C784';
-
+/** Legacy color constants — updated for neo-brutalism theme. */
 export default {
   light: {
-    text: '#000',
-    background: '#fff',
-    tint: tintColorLight,
-    tabIconDefault: '#ccc',
-    tabIconSelected: tintColorLight,
+    text: '#1B1A2E',
+    background: '#EDE8F5',
+    tint: '#1B1A2E',
+    tabIconDefault: '#A8A3B8',
+    tabIconSelected: '#1B1A2E',
   },
   dark: {
-    text: '#fff',
-    background: '#121212',
-    tint: tintColorDark,
-    tabIconDefault: '#666',
-    tabIconSelected: tintColorDark,
+    text: '#F0ECF8',
+    background: '#141225',
+    tint: '#D4C8F0',
+    tabIconDefault: '#5A5672',
+    tabIconSelected: '#D4C8F0',
   },
 } as const;
