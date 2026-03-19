@@ -1,10 +1,9 @@
-import { DarkTheme, DefaultTheme, ThemeProvider, type Theme } from '@react-navigation/native';
+import { DefaultTheme, ThemeProvider, type Theme } from '@react-navigation/native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Text, View } from 'react-native';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/components/useColorScheme';
 import { useBootLoader } from '@/src/hooks/useBootLoader';
 
 export { ErrorBoundary } from 'expo-router';
@@ -29,21 +28,7 @@ const NeoBrutLightTheme: Theme = {
   },
 };
 
-const NeoBrutDarkTheme: Theme = {
-  ...DarkTheme,
-  colors: {
-    ...DarkTheme.colors,
-    primary: '#D4C8F0',
-    background: '#141225',
-    card: '#141225',
-    text: '#F0ECF8',
-    border: '#3D3A58',
-    notification: '#EF5350',
-  },
-};
-
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const { isReady, error } = useBootLoader();
 
   if (error) {
@@ -62,18 +47,18 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? NeoBrutDarkTheme : NeoBrutLightTheme}>
+    <ThemeProvider value={NeoBrutLightTheme}>
       <Stack
         screenOptions={{
           headerStyle: {
-            backgroundColor: colorScheme === 'dark' ? '#141225' : '#EDE8F5',
+            backgroundColor: '#EDE8F5',
           },
           headerTitleStyle: {
             fontWeight: '800',
-            color: colorScheme === 'dark' ? '#F0ECF8' : '#1B1A2E',
+            color: '#1B1A2E',
           },
           headerShadowVisible: false,
-          headerTintColor: colorScheme === 'dark' ? '#D4C8F0' : '#1B1A2E',
+          headerTintColor: '#1B1A2E',
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
