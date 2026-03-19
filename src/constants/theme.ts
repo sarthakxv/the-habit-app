@@ -25,5 +25,7 @@ export const theme = {
   },
 } as const;
 
-export type Theme = typeof theme.light;
+export type Theme = {
+  [K in keyof typeof theme.light]: string;
+};
 export type ColorScheme = 'light' | 'dark';

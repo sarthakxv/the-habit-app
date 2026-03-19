@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import type { Habit } from '../types';
 
 interface HabitCardProps {
@@ -11,25 +11,41 @@ interface HabitCardProps {
 }
 
 export function HabitCard({ habit, isCompleted, streakCount, onToggle, onPress }: HabitCardProps) {
+  const isDark = useColorScheme() === 'dark';
+
   return (
     <Pressable
-      style={[styles.container, isCompleted && styles.completed]}
+      style={[
+        styles.container,
+        { backgroundColor: isDark ? '#1E1E1E' : '#fff' },
+        isCompleted && styles.completed,
+      ]}
       onPress={onPress}
     >
       <View style={[styles.colorStripe, { backgroundColor: habit.color }]} />
       <View style={styles.content}>
         <Text style={styles.icon}>{habit.icon}</Text>
         <View style={styles.textContainer}>
-          <Text style={[styles.name, isCompleted && styles.nameCompleted]}>
+          <Text style={[
+            styles.name,
+            { color: isDark ? '#fff' : '#1a1a1a' },
+            isCompleted && styles.nameCompleted,
+          ]}>
             {habit.name}
           </Text>
           {streakCount > 0 && (
-            <Text style={styles.streak}>Day {streakCount}</Text>
+            <Text style={[styles.streak, { color: isDark ? '#aaa' : '#888' }]}>
+              Day {streakCount}
+            </Text>
           )}
         </View>
       </View>
       <Pressable
-        style={[styles.checkButton, isCompleted && { backgroundColor: habit.color }]}
+        style={[
+          styles.checkButton,
+          { borderColor: isDark ? '#555' : '#ddd' },
+          isCompleted && { backgroundColor: habit.color, borderColor: habit.color },
+        ]}
         onPress={(e) => {
           e.stopPropagation?.();
           onToggle();
@@ -48,7 +64,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     borderRadius: 12,
     marginHorizontal: 16,
     marginVertical: 4,
@@ -84,7 +99,6 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1a1a1a',
   },
   nameCompleted: {
     textDecorationLine: 'line-through',
@@ -92,7 +106,6 @@ const styles = StyleSheet.create({
   },
   streak: {
     fontSize: 13,
-    color: '#888',
     marginTop: 2,
   },
   checkButton: {
@@ -100,7 +113,6 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     borderWidth: 2,
-    borderColor: '#ddd',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,

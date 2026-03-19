@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useHabitStore } from '@/src/store/habitStore';
 import { selectTodayHabits, selectTodayProgress, selectIsCompletedToday, selectCurrentStreak } from '@/src/store/selectors';
@@ -14,6 +14,7 @@ import type { Habit } from '@/src/types';
 
 export default function TodayScreen() {
   const router = useRouter();
+  const isDark = useColorScheme() === 'dark';
   const [selectedDate, setSelectedDate] = useState(getToday());
   const habits = useHabitStore((s) => s.habits);
   const completions = useHabitStore((s) => s.completions);
@@ -66,19 +67,19 @@ export default function TodayScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: isDark ? '#121212' : '#fafafa' }]}>
       {/* Date header */}
       <View style={styles.dateHeader}>
         <Pressable onPress={() => handleNavigateDay(-1)} hitSlop={12}>
-          <Text style={styles.arrow}>‹</Text>
+          <Text style={[styles.arrow, { color: isDark ? '#aaa' : '#666' }]}>‹</Text>
         </Pressable>
         <Pressable onPress={() => setSelectedDate(getToday())}>
-          <Text style={styles.dateText}>
+          <Text style={[styles.dateText, { color: isDark ? '#fff' : '#333' }]}>
             {isToday ? 'Today' : selectedDate}
           </Text>
         </Pressable>
         <Pressable onPress={() => handleNavigateDay(1)} hitSlop={12}>
-          <Text style={styles.arrow}>›</Text>
+          <Text style={[styles.arrow, { color: isDark ? '#aaa' : '#666' }]}>›</Text>
         </Pressable>
       </View>
 
@@ -110,7 +111,6 @@ export default function TodayScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fafafa',
   },
   dateHeader: {
     flexDirection: 'row',
