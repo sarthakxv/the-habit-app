@@ -1,5 +1,11 @@
 import './style.css'
 
+// Hero load animation
+window.addEventListener('DOMContentLoaded', () => {
+  document.querySelector('.hero-content')?.classList.add('animate-in')
+  document.querySelector('.hero-mockup')?.classList.add('animate-in')
+})
+
 // Smooth reveal animation on scroll
 const observer = new IntersectionObserver(
   (entries) => {

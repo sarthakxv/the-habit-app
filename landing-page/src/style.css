@@ -122,7 +122,7 @@ h1, h2, h3 {
 .hero-subtitle {
   font-size: 1.25rem;
   color: var(--text-secondary);
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   max-width: 460px;
   font-weight: 400;
   line-height: 1.6;
@@ -146,7 +146,7 @@ h1, h2, h3 {
   background: var(--card);
   border: var(--border-w) solid var(--border);
   border-radius: 36px;
-  padding: 12px;
+  padding: 6px;
   box-shadow: 6px 6px 0 var(--shadow);
   transform: rotate(2deg);
 }
@@ -314,15 +314,28 @@ h1, h2, h3 {
 
 .screenshots-scroll {
   display: flex;
+  justify-content: center;
   gap: 24px;
-  overflow-x: auto;
   padding-bottom: 16px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
 
-.screenshots-scroll::-webkit-scrollbar {
-  display: none;
+@media (max-width: 1080px) {
+  .screenshots-scroll {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .screenshots-scroll::after {
+    content: '';
+    flex-shrink: 0;
+    width: 6px;
+  }
+
+  .screenshots-scroll::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .screenshot-item {
@@ -331,11 +344,18 @@ h1, h2, h3 {
   text-align: center;
 }
 
-.screenshot-item img {
-  width: 240px;
+.screenshot-frame {
+  width: 230px;
+  padding: 6px;
+  background: var(--card);
   border: var(--border-w) solid var(--border);
   border-radius: var(--radius-lg);
   box-shadow: 3px 3px 0 var(--shadow);
+}
+
+.screenshot-frame img {
+  width: 100%;
+  border-radius: calc(var(--radius-lg) - 8px);
 }
 
 .screenshot-label {
@@ -457,7 +477,7 @@ h1, h2, h3 {
     padding-left: 24px;
   }
 
-  .screenshot-item img {
+  .screenshot-frame {
     width: 200px;
   }
 
@@ -484,4 +504,32 @@ h1, h2, h3 {
 .reveal.revealed {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ==========================================================================
+   Hero Load Animation
+   ========================================================================== */
+.hero-content,
+.hero-mockup {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.hero-content.animate-in {
+  animation: fadeSlideUp 0.7s ease forwards;
+}
+
+.hero-mockup.animate-in {
+  animation: fadeSlideUp 0.7s ease 0.2s forwards;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
