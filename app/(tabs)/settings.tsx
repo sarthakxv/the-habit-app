@@ -1,12 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Paths, File } from 'expo-file-system';
-import * as Sharing from 'expo-sharing';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useHabitStore } from '@/src/store/habitStore';
 import { getDatabase } from '@/src/hooks/useBootLoader';
 import { cancelAllNotifications } from '@/src/utils/notifications';
+import { exportHabitData } from '@/src/utils/exportData';
 import { useToast } from '@/src/components/Toast';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { neo } from '@/src/constants/theme';
@@ -70,28 +69,7 @@ export default function SettingsScreen() {
 
   const handleExportJSON = useCallback(async () => {
     try {
-      const data = {
-        exportedAt: new Date().toISOString(),
-        habits,
-        completions: Object.fromEntries(
-          Object.entries(completions).map(([id, dates]) => [id, Array.from(dates)])
-        ),
-        freezes: Object.fromEntries(
-          Object.entries(freezes).map(([id, dates]) => [id, Array.from(dates)])
-        ),
-      };
-
-      const json = JSON.stringify(data, null, 2);
-      const file = new File(Paths.cache, 'habit-tracker-export.json');
-      file.create();
-      file.write(json);
-
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(file.uri, {
-          mimeType: 'application/json',
-          dialogTitle: 'Export Habit Data',
-        });
-      }
+      await exportHabitData(habits, completions, freezes);
     } catch {
       showToast('Failed to export data.');
     }
