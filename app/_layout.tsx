@@ -89,6 +89,10 @@ export default function RootLayout() {
             name="habit/[id]"
             options={{ title: 'Habit Detail' }}
           />
+          <Stack.Screen
+            name="privacy-policy"
+            options={{ title: 'Privacy Policy' }}
+          />
         </Stack>
         {isFirstLaunch && <Redirect href="/onboarding" />}
       </ToastProvider>

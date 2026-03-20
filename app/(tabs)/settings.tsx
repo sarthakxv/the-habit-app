@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useHabitStore } from '@/src/store/habitStore';
 import { getDatabase } from '@/src/hooks/useBootLoader';
 import { cancelAllNotifications } from '@/src/utils/notifications';
@@ -12,6 +13,7 @@ import { neo } from '@/src/constants/theme';
 
 export default function SettingsScreen() {
   const colors = useThemeColors();
+  const router = useRouter();
   const { showToast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const habits = useHabitStore((s) => s.habits);
@@ -177,10 +179,22 @@ export default function SettingsScreen() {
         <Text style={[styles.buttonText, { color: colors.text }]}>Export as JSON</Text>
       </Pressable>
 
-      {/* App Info */}
+      {/* About */}
       <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
         ABOUT
       </Text>
+      <Pressable
+        style={[
+          styles.card,
+          styles.buttonCard,
+          neo.shadow,
+          { backgroundColor: colors.card, borderColor: colors.border, marginBottom: 8 },
+        ]}
+        onPress={() => router.push('/privacy-policy')}
+      >
+        <MaterialCommunityIcons name="shield-lock-outline" size={22} color={colors.text} />
+        <Text style={[styles.buttonText, { color: colors.text }]}>Privacy Policy</Text>
+      </Pressable>
       <View
         style={[
           styles.card,
