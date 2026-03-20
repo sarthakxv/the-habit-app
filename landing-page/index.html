@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Habit App — Build habits that stick.</title>
+  <meta name="description" content="A beautiful, privacy-first habit tracker for iOS. Track streaks, build consistency, and never lose progress with streak freezes. Your data never leaves your device." />
+  <meta name="theme-color" content="#EDE8F5" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://thehabitapp.com" />
+  <meta property="og:title" content="The Habit App — Build habits that stick." />
+  <meta property="og:description" content="A beautiful, privacy-first habit tracker for iOS. Track streaks, build consistency, and never lose progress with streak freezes." />
+  <meta property="og:image" content="https://thehabitapp.com/og-image.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The Habit App — Build habits that stick." />
+  <meta name="twitter:description" content="A beautiful, privacy-first habit tracker for iOS. Track streaks, build consistency, and never lose progress with streak freezes." />
+  <meta name="twitter:image" content="https://thehabitapp.com/og-image.png" />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "MobileApplication",
+    "name": "The Habit App",
+    "operatingSystem": "iOS",
+    "applicationCategory": "HealthApplication",
+    "description": "A beautiful, privacy-first habit tracker. Track streaks, build consistency, and never lose progress with streak freezes.",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Organization",
+      "name": "The Habit App"
+    }
+  }
+  </script>
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">Build habits<br/>that <span class="highlight">stick</span>.</h1>
+        <p class="hero-subtitle">A beautiful, privacy-first habit tracker. Track streaks, stay consistent, and never lose progress.</p>
+        <a href="https://apps.apple.com/app/the-habit-app" class="app-store-badge" aria-label="Download on the App Store">
+          <img src="/app-store-badge.svg" alt="Download on the App Store" width="180" height="60" />
+        </a>
+      </div>
+      <div class="hero-mockup">
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <img src="/screenshot-today.png" alt="The Habit App — Today view showing habit tracking" width="280" height="560" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2 class="section-title">Everything you need.<br/>Nothing you don't.</h2>
+      <div class="features-grid">
+        <div class="feature-card card-green">
+          <div class="feature-icon">🔥</div>
+          <h3>Streak Tracking</h3>
+          <p>Watch your streaks grow day by day. Visual progress that keeps you motivated and accountable.</p>
+        </div>
+        <div class="feature-card card-blue">
+          <div class="feature-icon">🧊</div>
+          <h3>Streak Freezes</h3>
+          <p>Life happens. Use a streak freeze to protect your progress when you miss a day. One per week, automatically applied.</p>
+        </div>
+        <div class="feature-card card-pink">
+          <div class="feature-icon">🔒</div>
+          <h3>Privacy First</h3>
+          <p>Your data never leaves your device. No accounts, no cloud sync, no tracking. Just you and your habits.</p>
+        </div>
+        <div class="feature-card card-yellow">
+          <div class="feature-icon">✨</div>
+          <h3>Beautiful Design</h3>
+          <p>A bold, playful interface with neo-brutalism design. Habit tracking should feel as good as it looks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Social Proof -->
+  <section class="social-proof">
+    <div class="container">
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-number">1000+</span>
+          <span class="stat-label">Habits tracked</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number">4.9★</span>
+          <span class="stat-label">App Store rating</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-number">100%</span>
+          <span class="stat-label">Private & offline</span>
+        </div>
+      </div>
+      <p class="social-tagline">Join thousands building better habits.</p>
+    </div>
+  </section>
+
+  <!-- Privacy Callout -->
+  <section class="privacy-callout">
+    <div class="container">
+      <div class="callout-card">
+        <div class="callout-icon">🛡️</div>
+        <h2>Your data never leaves your device.</h2>
+        <p>No accounts. No cloud sync. No analytics tracking your every move. The Habit App stores everything locally on your phone using SQLite. Your habits are yours alone.</p>
+        <p class="callout-emphasis">We can't see your data because we never ask for it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots -->
+  <section class="screenshots" id="screenshots">
+    <div class="container">
+      <h2 class="section-title">See it in action.</h2>
+      <div class="screenshots-scroll">
+        <div class="screenshot-item">
+          <img src="/screenshot-today.png" alt="Today view — check off daily habits" width="240" height="480" loading="lazy" />
+          <span class="screenshot-label">Today</span>
+        </div>
+        <div class="screenshot-item">
+          <img src="/screenshot-calendar.png" alt="Calendar view — see your habit history" width="240" height="480" loading="lazy" />
+          <span class="screenshot-label">Calendar</span>
+        </div>
+        <div class="screenshot-item">
+          <img src="/screenshot-detail.png" alt="Habit detail — track your streaks" width="240" height="480" loading="lazy" />
+          <span class="screenshot-label">Detail</span>
+        </div>
+        <div class="screenshot-item">
+          <img src="/screenshot-new.png" alt="New habit — pick colors and icons" width="240" height="480" loading="lazy" />
+          <span class="screenshot-label">New Habit</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta">
+    <div class="container">
+      <h2>Start building better habits today.</h2>
+      <a href="https://apps.apple.com/app/the-habit-app" class="app-store-badge" aria-label="Download on the App Store">
+        <img src="/app-store-badge.svg" alt="Download on the App Store" width="180" height="60" />
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="footer-logo">The Habit App</span>
+        </div>
+        <div class="footer-links">
+          <a href="/privacy-policy.html">Privacy Policy</a>
+          <a href="mailto:support@thehabitapp.com">Contact</a>
+        </div>
+      </div>
+      <p class="footer-copy">&copy; 2025 The Habit App. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
