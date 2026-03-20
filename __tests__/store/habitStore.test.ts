@@ -42,8 +42,9 @@ const makeHabit = (overrides: Partial<Habit> = {}): Habit => ({
 
 describe('habitStore', () => {
   describe('loadFromDB', () => {
-    it('hydrates habits, completions, and freezes from database', async () => {
+    it('hydrates habits, archivedHabits, completions, and freezes from database', async () => {
       const habits: Habit[] = [makeHabit()];
+      const archivedHabits: Habit[] = [makeHabit({ id: 'h2', name: 'Old Habit', archived: true })];
       const completions: Completion[] = [
         { id: 'c1', habitId: 'h1', completedAt: '2026-03-19' },
       ];
@@ -52,6 +53,7 @@ describe('habitStore', () => {
       ];
 
       (db.getHabits as jest.Mock).mockResolvedValue(habits);
+      (db.getArchivedHabits as jest.Mock).mockResolvedValue(archivedHabits);
       (db.getAllCompletions as jest.Mock).mockResolvedValue(completions);
       (db.getStreakFreezes as jest.Mock).mockResolvedValue(freezes);
 
@@ -59,6 +61,7 @@ describe('habitStore', () => {
 
       const state = useHabitStore.getState();
       expect(state.habits).toEqual(habits);
+      expect(state.archivedHabits).toEqual(archivedHabits);
       expect(state.completions['h1']?.has('2026-03-19')).toBe(true);
       expect(state.freezes['h1']?.has('2026-03-17')).toBe(true);
     });
@@ -144,14 +147,89 @@ describe('habitStore', () => {
   });
 
   describe('archiveHabit', () => {
-    it('removes habit from store and calls DB archive', async () => {
-      useHabitStore.setState({ habits: [makeHabit()] });
+    it('removes habit from habits, adds to archivedHabits, and calls DB archive', async () => {
+      const habit = makeHabit();
+      useHabitStore.setState({ habits: [habit], archivedHabits: [] });
       (db.archiveHabit as jest.Mock).mockResolvedValue(undefined);
 
       await useHabitStore.getState().archiveHabit(mockDb, 'h1');
 
       expect(db.archiveHabit).toHaveBeenCalledWith(mockDb, 'h1');
-      expect(useHabitStore.getState().habits).toHaveLength(0);
+      const state = useHabitStore.getState();
+      expect(state.habits).toHaveLength(0);
+      expect(state.archivedHabits).toHaveLength(1);
+      expect(state.archivedHabits[0].id).toBe('h1');
+      expect(state.archivedHabits[0].archived).toBe(true);
+    });
+
+    it('does not update store if DB archive fails', async () => {
+      const habit = makeHabit();
+      useHabitStore.setState({ habits: [habit], archivedHabits: [] });
+      (db.archiveHabit as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+      await expect(useHabitStore.getState().archiveHabit(mockDb, 'h1')).rejects.toThrow('DB error');
+
+      const state = useHabitStore.getState();
+      expect(state.habits).toHaveLength(1);
+      expect(state.archivedHabits).toHaveLength(0);
+    });
+  });
+
+  describe('unarchiveHabit', () => {
+    it('moves habit from archivedHabits back to habits and calls DB unarchive', async () => {
+      const archived = makeHabit({ archived: true });
+      useHabitStore.setState({ habits: [], archivedHabits: [archived] });
+      (db.unarchiveHabit as jest.Mock).mockResolvedValue(undefined);
+
+      await useHabitStore.getState().unarchiveHabit(mockDb, 'h1');
+
+      expect(db.unarchiveHabit).toHaveBeenCalledWith(mockDb, 'h1');
+      const state = useHabitStore.getState();
+      expect(state.archivedHabits).toHaveLength(0);
+      expect(state.habits).toHaveLength(1);
+      expect(state.habits[0].archived).toBe(false);
+    });
+
+    it('does not update store if DB unarchive fails', async () => {
+      const archived = makeHabit({ archived: true });
+      useHabitStore.setState({ habits: [], archivedHabits: [archived] });
+      (db.unarchiveHabit as jest.Mock).mockRejectedValue(new Error('DB error'));
+
+      await expect(useHabitStore.getState().unarchiveHabit(mockDb, 'h1')).rejects.toThrow('DB error');
+
+      const state = useHabitStore.getState();
+      expect(state.archivedHabits).toHaveLength(1);
+      expect(state.habits).toHaveLength(0);
+    });
+  });
+
+  describe('deleteHabitPermanently', () => {
+    it('removes an active habit from habits and calls DB delete', async () => {
+      useHabitStore.setState({
+        habits: [makeHabit()],
+        completions: { h1: new Set(['2026-03-19']) },
+        freezes: { h1: new Set(['2026-03-17']) },
+      });
+      (db.deleteHabitPermanently as jest.Mock).mockResolvedValue(undefined);
+
+      await useHabitStore.getState().deleteHabitPermanently(mockDb, 'h1');
+
+      expect(db.deleteHabitPermanently).toHaveBeenCalledWith(mockDb, 'h1');
+      const state = useHabitStore.getState();
+      expect(state.habits).toHaveLength(0);
+      expect(state.completions['h1']).toBeUndefined();
+      expect(state.freezes['h1']).toBeUndefined();
+    });
+
+    it('removes an archived habit from archivedHabits', async () => {
+      const archived = makeHabit({ archived: true });
+      useHabitStore.setState({ habits: [], archivedHabits: [archived] });
+      (db.deleteHabitPermanently as jest.Mock).mockResolvedValue(undefined);
+
+      await useHabitStore.getState().deleteHabitPermanently(mockDb, 'h1');
+
+      const state = useHabitStore.getState();
+      expect(state.archivedHabits).toHaveLength(0);
     });
   });
 

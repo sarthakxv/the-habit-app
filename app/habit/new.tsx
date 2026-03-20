@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useHabitStore } from '@/src/store/habitStore';
 import { getDatabase } from '@/src/hooks/useBootLoader';
@@ -20,6 +20,7 @@ import {
 
 export default function NewHabitScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const colors = useThemeColors();
   const addHabit = useHabitStore((s) => s.addHabit);
 
@@ -29,6 +30,7 @@ export default function NewHabitScreen() {
   const [frequencyType, setFrequencyType] = useState<'daily' | 'weekly'>('daily');
   const [weeklyDays, setWeeklyDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [reminderTime, setReminderTime] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const handleDayToggle = useCallback((day: number) => {
     setWeeklyDays((prev) =>
@@ -52,6 +54,7 @@ export default function NewHabitScreen() {
       return;
     }
 
+    setSaving(true);
     try {
       const db = getDatabase();
       const habit = await addHabit(db, {
@@ -71,12 +74,17 @@ export default function NewHabitScreen() {
         }
       }
 
-      router.back();
+      if (navigation.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)');
+      }
     } catch (e) {
+      setSaving(false);
       const message = e instanceof Error ? e.message : 'Something went wrong';
       Alert.alert('Error', message);
     }
-  }, [name, color, icon, frequencyType, weeklyDays, reminderTime, addHabit, router]);
+  }, [name, color, icon, frequencyType, weeklyDays, reminderTime, addHabit, router, navigation]);
 
   return (
     <ScrollView
@@ -166,8 +174,10 @@ export default function NewHabitScreen() {
           styles.saveButton,
           neo.shadow,
           { backgroundColor: colors.text, borderColor: colors.border },
+          saving && { opacity: 0.5 },
         ]}
         onPress={handleSave}
+        disabled={saving}
       >
         <MaterialCommunityIcons name="plus" size={22} color={colors.card} />
         <Text style={[styles.saveText, { color: colors.card }]}>Create Habit</Text>

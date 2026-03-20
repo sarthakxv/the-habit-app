@@ -6,7 +6,7 @@ import * as Sharing from 'expo-sharing';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useHabitStore } from '@/src/store/habitStore';
 import { getDatabase } from '@/src/hooks/useBootLoader';
-import { cancelAllNotifications } from '@/src/services/notificationService';
+import { cancelAllNotifications } from '@/src/utils/notifications';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { neo } from '@/src/constants/theme';
 
@@ -14,8 +14,50 @@ export default function SettingsScreen() {
   const colors = useThemeColors();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const habits = useHabitStore((s) => s.habits);
+  const archivedHabits = useHabitStore((s) => s.archivedHabits);
   const completions = useHabitStore((s) => s.completions);
   const freezes = useHabitStore((s) => s.freezes);
+  const unarchiveHabit = useHabitStore((s) => s.unarchiveHabit);
+  const deleteHabitPermanently = useHabitStore((s) => s.deleteHabitPermanently);
+
+  const handleRestore = useCallback((id: string) => {
+    Alert.alert('Restore Habit', 'This habit will reappear in your daily view.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Restore',
+        onPress: async () => {
+          try {
+            const db = getDatabase();
+            await unarchiveHabit(db, id);
+          } catch {
+            Alert.alert('Error', 'Could not restore habit. Please try again.');
+          }
+        },
+      },
+    ]);
+  }, [unarchiveHabit]);
+
+  const handleDeleteForever = useCallback((id: string, name: string) => {
+    Alert.alert(
+      'Delete Forever',
+      `"${name}" and all its history will be permanently deleted. This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const db = getDatabase();
+              await deleteHabitPermanently(db, id);
+            } catch {
+              Alert.alert('Error', 'Could not delete habit. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  }, [deleteHabitPermanently]);
 
   const handleNotificationToggle = useCallback(async (value: boolean) => {
     setNotificationsEnabled(value);
@@ -83,6 +125,60 @@ export default function SettingsScreen() {
           />
         </View>
       </View>
+
+      {/* Archived Habits */}
+      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
+        ARCHIVED HABITS
+      </Text>
+      {archivedHabits.length === 0 ? (
+        <View
+          style={[
+            styles.card,
+            neo.shadow,
+            { backgroundColor: colors.card, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+            No archived habits
+          </Text>
+        </View>
+      ) : (
+        archivedHabits.map((habit) => (
+          <View
+            key={habit.id}
+            style={[
+              styles.card,
+              styles.archivedRow,
+              neo.shadow,
+              { backgroundColor: colors.card, borderColor: colors.border },
+            ]}
+          >
+            <Text style={[styles.archivedName, { color: colors.text }]} numberOfLines={1}>
+              {habit.icon} {habit.name}
+            </Text>
+            <View style={styles.archivedActions}>
+              <Pressable
+                style={[
+                  styles.actionChip,
+                  { backgroundColor: colors.pastelGreen, borderColor: colors.border },
+                ]}
+                onPress={() => handleRestore(habit.id)}
+              >
+                <Text style={[styles.actionChipText, { color: colors.text }]}>Restore</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.actionChip,
+                  { backgroundColor: colors.pastelPink, borderColor: colors.border },
+                ]}
+                onPress={() => handleDeleteForever(habit.id, habit.name)}
+              >
+                <Text style={[styles.actionChipText, { color: colors.text }]}>Delete</Text>
+              </Pressable>
+            </View>
+          </View>
+        ))
+      )}
 
       {/* Data */}
       <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
@@ -174,5 +270,37 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     marginTop: 4,
+  },
+  emptyText: {
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
+    paddingVertical: 4,
+  },
+  archivedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    gap: 12,
+  },
+  archivedName: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  archivedActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: neo.borderRadiusFull,
+    borderWidth: neo.borderWidth,
+  },
+  actionChipText: {
+    fontSize: 13,
+    fontWeight: '700',
   },
 });

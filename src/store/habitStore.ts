@@ -3,11 +3,13 @@ import type { Habit, Completion, StreakFreeze, HabitFrequency } from '../types';
 import {
   type DatabaseLike,
   getHabits,
+  getArchivedHabits,
   getAllCompletions,
   getStreakFreezes,
   insertHabit,
   updateHabit as dbUpdateHabit,
   archiveHabit as dbArchiveHabit,
+  unarchiveHabit as dbUnarchiveHabit,
   deleteHabitPermanently as dbDeleteHabit,
   insertCompletion,
   deleteCompletion,
@@ -29,6 +31,7 @@ interface NewHabitInput {
 
 interface HabitState {
   habits: Habit[];
+  archivedHabits: Habit[];
   /** All completions indexed by habitId. Set<dateString> for O(1) lookup. */
   completions: Record<string, Set<string>>;
   /** Streak freeze dates indexed by habitId. */
@@ -39,6 +42,7 @@ interface HabitState {
   addHabit: (db: DatabaseLike, input: NewHabitInput) => Promise<Habit>;
   updateHabit: (db: DatabaseLike, id: string, updates: Partial<Pick<Habit, 'name' | 'color' | 'icon' | 'frequency' | 'reminderTime' | 'notificationId' | 'position'>>) => Promise<void>;
   archiveHabit: (db: DatabaseLike, id: string) => Promise<void>;
+  unarchiveHabit: (db: DatabaseLike, id: string) => Promise<void>;
   deleteHabitPermanently: (db: DatabaseLike, id: string) => Promise<void>;
   toggleCompletion: (db: DatabaseLike, habitId: string, date: string) => Promise<void>;
   reorderHabits: (db: DatabaseLike, orderedIds: string[]) => Promise<void>;
@@ -47,6 +51,7 @@ interface HabitState {
 
 const initialState = {
   habits: [] as Habit[],
+  archivedHabits: [] as Habit[],
   completions: {} as Record<string, Set<string>>,
   freezes: {} as Record<string, Set<string>>,
 };
@@ -57,8 +62,9 @@ export const useHabitStore = create<HabitState>((set, get) => ({
   reset: () => set(initialState),
 
   loadFromDB: async (db) => {
-    const [habits, completions, freezes] = await Promise.all([
+    const [habits, archivedHabits, completions, freezes] = await Promise.all([
       getHabits(db),
+      getArchivedHabits(db),
       getAllCompletions(db),
       getStreakFreezes(db),
     ]);
@@ -77,7 +83,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       freezeMap[f.habitId].add(f.freezeDate);
     }
 
-    set({ habits, completions: completionMap, freezes: freezeMap });
+    set({ habits, archivedHabits, completions: completionMap, freezes: freezeMap });
   },
 
   addHabit: async (db, input) => {
@@ -119,9 +125,28 @@ export const useHabitStore = create<HabitState>((set, get) => ({
 
   archiveHabit: async (db, id) => {
     await dbArchiveHabit(db, id);
-    set((state) => ({
-      habits: state.habits.filter((h) => h.id !== id),
-    }));
+    set((state) => {
+      const habit = state.habits.find((h) => h.id === id);
+      return {
+        habits: state.habits.filter((h) => h.id !== id),
+        archivedHabits: habit
+          ? [...state.archivedHabits, { ...habit, archived: true }]
+          : state.archivedHabits,
+      };
+    });
+  },
+
+  unarchiveHabit: async (db, id) => {
+    await dbUnarchiveHabit(db, id);
+    set((state) => {
+      const habit = state.archivedHabits.find((h) => h.id === id);
+      return {
+        archivedHabits: state.archivedHabits.filter((h) => h.id !== id),
+        habits: habit
+          ? [...state.habits, { ...habit, archived: false }]
+          : state.habits,
+      };
+    });
   },
 
   deleteHabitPermanently: async (db, id) => {
@@ -131,6 +156,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
       const { [id]: _freezes, ...restFreezes } = state.freezes;
       return {
         habits: state.habits.filter((h) => h.id !== id),
+        archivedHabits: state.archivedHabits.filter((h) => h.id !== id),
         completions: restCompletions,
         freezes: restFreezes,
       };

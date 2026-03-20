@@ -1,11 +1,13 @@
 import {
   initializeDatabase,
   getHabits,
+  getArchivedHabits,
   getAllCompletions,
   getStreakFreezes,
   insertHabit,
   updateHabit,
   archiveHabit,
+  unarchiveHabit,
   deleteHabitPermanently,
   insertCompletion,
   deleteCompletion,
@@ -185,6 +187,37 @@ describe('database', () => {
     });
   });
 
+  describe('getArchivedHabits', () => {
+    it('returns only archived habits', async () => {
+      const mockRows: HabitRow[] = [
+        {
+          id: 'h2',
+          name: 'Old Habit',
+          color: '#FF5722',
+          icon: '🗄️',
+          frequency: '{"type":"daily"}',
+          reminder_time: null,
+          notification_id: null,
+          position: 0,
+          created_at: '2026-01-01T00:00:00Z',
+          archived: 1,
+        },
+      ];
+      const db = createMockDatabase();
+      db.getAllAsync.mockResolvedValue(mockRows);
+
+      const habits = await getArchivedHabits(db);
+
+      expect(db.getAllAsync).toHaveBeenCalledWith(
+        expect.stringContaining('archived = 1'),
+        expect.anything()
+      );
+      expect(habits).toHaveLength(1);
+      expect(habits[0].id).toBe('h2');
+      expect(habits[0].archived).toBe(true);
+    });
+  });
+
   describe('archiveHabit', () => {
     it('sets archived = 1 for the given habit', async () => {
       const db = createMockDatabase();
@@ -195,6 +228,20 @@ describe('database', () => {
       expect(db.runAsync).toHaveBeenCalledWith(
         expect.stringContaining('UPDATE habits SET archived = 1'),
         expect.arrayContaining(['h1'])
+      );
+    });
+  });
+
+  describe('unarchiveHabit', () => {
+    it('sets archived = 0 for the given habit', async () => {
+      const db = createMockDatabase();
+      db.runAsync.mockResolvedValue({ changes: 1, lastInsertRowId: 0 });
+
+      await unarchiveHabit(db, 'h2');
+
+      expect(db.runAsync).toHaveBeenCalledWith(
+        expect.stringContaining('archived = 0'),
+        expect.arrayContaining(['h2'])
       );
     });
   });

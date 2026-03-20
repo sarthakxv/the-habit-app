@@ -63,6 +63,14 @@ export async function getHabits(db: DatabaseLike): Promise<Habit[]> {
   return rows.map(habitRowToHabit);
 }
 
+export async function getArchivedHabits(db: DatabaseLike): Promise<Habit[]> {
+  const rows = await db.getAllAsync<HabitRow>(
+    'SELECT * FROM habits WHERE archived = 1 ORDER BY name ASC',
+    []
+  );
+  return rows.map(habitRowToHabit);
+}
+
 export async function getAllCompletions(db: DatabaseLike): Promise<Completion[]> {
   const rows = await db.getAllAsync<CompletionRow>(
     'SELECT * FROM completions',
@@ -148,6 +156,10 @@ export async function updateHabit(
 
 export async function archiveHabit(db: DatabaseLike, id: string): Promise<void> {
   await db.runAsync('UPDATE habits SET archived = 1 WHERE id = ?', [id]);
+}
+
+export async function unarchiveHabit(db: DatabaseLike, id: string): Promise<void> {
+  await db.runAsync('UPDATE habits SET archived = 0 WHERE id = ?', [id]);
 }
 
 export async function deleteHabitPermanently(db: DatabaseLike, id: string): Promise<void> {

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,6 +8,7 @@ import { selectCurrentStreak, selectLongestStreak, selectIsCompletedToday } from
 import { getToday } from '@/src/utils/dates';
 import { getDatabase } from '@/src/hooks/useBootLoader';
 import { StreakBadge } from '@/src/components/StreakBadge';
+import { EditHabitModal } from '@/src/components/EditHabitModal';
 import { HabitIcon } from '@/src/components/HabitIcon';
 import { ReminderTimePicker } from '@/src/components/ReminderTimePicker';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
@@ -26,24 +27,19 @@ export default function HabitDetailScreen() {
   const today = getToday();
 
   const habit = useHabitStore((s) => s.habits.find((h) => h.id === id));
-  const completions = useHabitStore((s) => s.completions[id ?? ''] ?? new Set());
+  const completionsOrNull = useHabitStore((s) => s.completions[id ?? ''] ?? null);
+  const completions = useMemo(() => completionsOrNull ?? new Set<string>(), [completionsOrNull]);
   const toggleCompletion = useHabitStore((s) => s.toggleCompletion);
   const archiveHabit = useHabitStore((s) => s.archiveHabit);
   const updateHabit = useHabitStore((s) => s.updateHabit);
+  const [editModalVisible, setEditModalVisible] = useState(false);
 
-  if (!habit || !id) {
-    return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Text style={[styles.errorText, { color: colors.textSecondary }]}>Habit not found</Text>
-      </View>
-    );
-  }
-
-  const isCompleted = selectIsCompletedToday(id, today);
-  const streak = selectCurrentStreak(id, today);
-  const longestStreak = selectLongestStreak(id);
+  const isCompleted = id ? selectIsCompletedToday(id, today) : false;
+  const streak = id ? selectCurrentStreak(id, today) : { count: 0, includesFreeze: false };
+  const longestStreak = id ? selectLongestStreak(id) : 0;
 
   const handleMarkDone = useCallback(async () => {
+    if (!id) return;
     try {
       const db = getDatabase();
       await toggleCompletion(db, id, today);
@@ -59,7 +55,6 @@ export default function HabitDetailScreen() {
     if (!habit || !id) return;
     const db = getDatabase();
     try {
-      // Cancel previous notification if any
       if (habit.notificationId) {
         await cancelHabitReminder(habit.notificationId);
       }
@@ -84,6 +79,7 @@ export default function HabitDetailScreen() {
   }, [id, habit, updateHabit]);
 
   const handleArchive = useCallback(() => {
+    if (!id) return;
     Alert.alert(
       'Archive Habit',
       'This will hide the habit from your daily view. You can restore it from Settings.',
@@ -107,6 +103,14 @@ export default function HabitDetailScreen() {
   }, [id, archiveHabit, router]);
 
   const last30Days = Array.from(eachDayBackward(today, 30));
+
+  if (!habit || !id) {
+    return (
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.textSecondary }]}>Habit not found</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -194,7 +198,7 @@ export default function HabitDetailScreen() {
           neo.shadowSm,
           { backgroundColor: colors.card, borderColor: colors.border },
         ]}
-        onPress={() => {/* TODO: Edit modal */}}
+        onPress={() => setEditModalVisible(true)}
       >
         <MaterialCommunityIcons name="pencil" size={20} color={colors.text} />
         <Text style={[styles.actionText, { color: colors.text }]}>Edit Habit</Text>
@@ -212,6 +216,9 @@ export default function HabitDetailScreen() {
         <MaterialCommunityIcons name="archive-outline" size={20} color={colors.text} />
         <Text style={[styles.actionText, { color: colors.text }]}>Archive Habit</Text>
       </Pressable>
+      {editModalVisible && (
+        <EditHabitModal habit={habit} onClose={() => setEditModalVisible(false)} />
+      )}
     </ScrollView>
   );
 }
