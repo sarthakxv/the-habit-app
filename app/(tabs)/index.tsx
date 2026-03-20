@@ -17,7 +17,7 @@ import { neo } from '@/src/constants/theme';
 import { subDays, addDays, parseISO } from 'date-fns';
 import { useToast } from '@/src/components/Toast';
 import type { Habit } from '@/src/types';
-import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withSpring, LinearTransition } from 'react-native-reanimated';
 
 function DraggableHabitCard({
   habit,
@@ -123,7 +123,7 @@ export default function TodayScreen() {
         isActive={isActive}
       />
     );
-  }, [selectedDate, handleToggle, router]);
+  }, [selectedDate, handleToggle, router, completions]);
 
   if (habits.length === 0) {
     return <EmptyState onAddHabit={handleAddHabit} />;
@@ -160,21 +160,28 @@ export default function TodayScreen() {
       {isPerfectDay && <PerfectDayBanner />}
 
       {/* Section label */}
-      <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
-        {isToday ? "TODAY'S TASKS" : 'TASKS'}
-      </Text>
+      <Animated.View layout={LinearTransition.springify().damping(20).stiffness(120)}>
+        <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>
+          {isToday ? "TODAY'S TASKS" : 'TASKS'}
+        </Text>
+      </Animated.View>
 
       {/* Habit list — draggable only on Today view */}
-      <DraggableFlatList
-        data={todayHabits}
-        keyExtractor={(item) => item.id}
-        renderItem={renderHabitCard}
-        onDragEnd={handleDragEnd}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        activationDistance={isToday ? 0 : 999}
-        containerStyle={styles.dragContainer}
-      />
+      <Animated.View
+        layout={LinearTransition.springify().damping(20).stiffness(120)}
+        style={styles.dragContainer}
+      >
+        <DraggableFlatList
+          data={todayHabits}
+          keyExtractor={(item) => item.id}
+          renderItem={renderHabitCard}
+          onDragEnd={handleDragEnd}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          activationDistance={isToday ? 0 : 999}
+          containerStyle={{ flex: 1 }}
+        />
+      </Animated.View>
 
       {/* FAB */}
       <Pressable

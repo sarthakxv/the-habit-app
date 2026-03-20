@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import { neo } from '../constants/theme';
 import { useThemeColors } from '../hooks/useThemeColors';
 
@@ -15,6 +16,22 @@ export function ProgressRing({ completed, total, size = 100 }: ProgressRingProps
   const colors = useThemeColors();
   const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
   const isAllDone = total > 0 && completed === total;
+
+  const [trackWidth, setTrackWidth] = useState(0);
+  const animatedFillWidth = useSharedValue(0);
+
+  useEffect(() => {
+    if (trackWidth > 0) {
+      animatedFillWidth.value = withTiming((percentage / 100) * trackWidth, {
+        duration: 500,
+        easing: Easing.out(Easing.cubic),
+      });
+    }
+  }, [percentage, trackWidth]);
+
+  const barAnimatedStyle = useAnimatedStyle(() => ({
+    width: animatedFillWidth.value,
+  }));
 
   return (
     <View
@@ -36,15 +53,12 @@ export function ProgressRing({ completed, total, size = 100 }: ProgressRingProps
       </Text>
 
       {/* Progress bar */}
-      <View style={[styles.barTrack, { backgroundColor: colors.border + '20' }]}>
-        <View
-          style={[
-            styles.barFill,
-            {
-              width: `${percentage}%`,
-              backgroundColor: colors.text,
-            },
-          ]}
+      <View
+        style={[styles.barTrack, { backgroundColor: colors.border + '20' }]}
+        onLayout={(e) => setTrackWidth(e.nativeEvent.layout.width)}
+      >
+        <Animated.View
+          style={[styles.barFill, { backgroundColor: colors.text }, barAnimatedStyle]}
         />
       </View>
       <Text style={[styles.percentage, { color: colors.textSecondary }]}>
@@ -79,7 +93,6 @@ const styles = StyleSheet.create({
   barFill: {
     height: '100%',
     borderRadius: 6,
-    minWidth: 4,
   },
   percentage: {
     fontSize: 13,
