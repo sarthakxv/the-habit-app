@@ -1,5 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 60" width="180" height="60">
-  <rect width="180" height="60" rx="10" fill="#1B1A2E"/>
-  <text x="90" y="24" text-anchor="middle" fill="#fff" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="400">Download on the</text>
-  <text x="90" y="42" text-anchor="middle" fill="#fff" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="700">App Store</text>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1a1a1a"/>
+      <stop offset="1" stop-color="#0a0a0a"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="60" rx="10" fill="url(#bg)" stroke="#a6a6a6" stroke-width="0.8"/>
+  <!-- Apple Logo -->
+  <g transform="translate(22,10) scale(0.038)">
+    <path fill="#fff" d="M640.868 462.59c-1.586 17.068-10.27 35.696-26.027 55.883-21.66 27.733-42.187 41.599-61.58 41.599-9.488 0-21.283-3.074-35.384-9.224-14.104-6.148-26.826-9.223-38.17-9.223-12.196 0-25.33 3.174-39.405 9.524-14.079 6.347-25.43 9.523-34.062 9.523-22.685 0-45.1-15.725-67.242-47.177C313.826 475.09 300.8 436.46 300.8 399.98c0-37.28 9.975-67.662 29.928-91.14 19.95-23.478 44.483-35.218 73.596-35.218 13.702 0 29.052 3.374 46.048 10.122 16.996 6.748 27.858 10.122 32.586 10.122 5.672 0 17.183-3.972 34.528-11.921 16.448-7.348 30.348-10.722 41.7-10.122 27.62 1.994 48.44 13.284 62.46 33.871-22.56 14.898-33.694 34.77-33.398 59.613.3 24.843 9.438 45.255 27.42 61.233 8.424 8.024 16.296 13.684 23.62 16.974-1.886 5.78-3.896 11.362-6.02 16.748l-.4 1.348zM513.592 183.6c0 19.48-6.872 37.78-20.616 54.9-16.596 20.28-36.645 31.99-58.39 30.148a58.663 58.663 0 01-.45-7.148c0-18.68 7.86-38.68 21.822-55.04 6.972-8.28 15.85-15.178 26.632-20.698 10.78-5.42 20.972-8.42 30.574-9.012.3 2.3.428 4.55.428 6.85z"/>
+  </g>
+  <!-- Text -->
+  <text x="88" y="22" fill="#fff" font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif" font-size="9" font-weight="400" letter-spacing="0.2">Download on the</text>
+  <text x="88" y="42" fill="#fff" font-family="-apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="0.5">App Store</text>
 </svg>
