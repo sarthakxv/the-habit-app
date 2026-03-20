@@ -1,10 +1,15 @@
+import React from 'react';
 import { DefaultTheme, ThemeProvider, type Theme } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Text, View } from 'react-native';
 import 'react-native-reanimated';
 
 import { useBootLoader } from '@/src/hooks/useBootLoader';
+import { configureNotificationHandler, requestNotificationPermissions } from '@/src/utils/notifications';
+
+// Configure how notifications appear when app is foregrounded (must run at module load)
+configureNotificationHandler();
 
 export { ErrorBoundary } from 'expo-router';
 
@@ -29,7 +34,14 @@ const NeoBrutLightTheme: Theme = {
 };
 
 export default function RootLayout() {
-  const { isReady, error } = useBootLoader();
+  const { isReady, isFirstLaunch, error } = useBootLoader();
+
+  // Request notification permission after app is ready (non-blocking)
+  React.useEffect(() => {
+    if (isReady) {
+      requestNotificationPermissions().catch(() => {});
+    }
+  }, [isReady]);
 
   if (error) {
     return (
@@ -64,6 +76,10 @@ export default function RootLayout() {
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
+          name="onboarding"
+          options={{ headerShown: false, gestureEnabled: false }}
+        />
+        <Stack.Screen
           name="habit/new"
           options={{ presentation: 'modal', title: 'New Habit' }}
         />
@@ -72,6 +88,7 @@ export default function RootLayout() {
           options={{ title: 'Habit Detail' }}
         />
       </Stack>
+      {isFirstLaunch && <Redirect href="/onboarding" />}
     </ThemeProvider>
   );
 }

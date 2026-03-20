@@ -39,4 +39,9 @@ CREATE TABLE IF NOT EXISTS streak_freezes (
   FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE,
   UNIQUE(habit_id, freeze_date)
 );
+
+CREATE TABLE IF NOT EXISTS settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
 `;

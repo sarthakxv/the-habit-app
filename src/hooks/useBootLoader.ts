@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import * as SQLite from 'expo-sqlite';
 import { initializeDatabase, type DatabaseLike } from '../db/database';
+import { hasSeenOnboarding } from '../db/settings';
 import { useHabitStore } from '../store/habitStore';
 
 /** Singleton database instance, initialized on first boot. */
@@ -22,6 +23,7 @@ export function getDatabase(): DatabaseLike {
  */
 export function useBootLoader() {
   const [isReady, setIsReady] = useState(false);
+  const [isFirstLaunch, setIsFirstLaunch] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const loadFromDB = useHabitStore((s) => s.loadFromDB);
 
@@ -35,14 +37,18 @@ export function useBootLoader() {
         // 2. Create tables + run migrations
         await initializeDatabase(dbInstance);
 
-        // 3. Hydrate zustand store with all data
+        // 3. Check onboarding flag before hydrating store
+        const seenOnboarding = await hasSeenOnboarding(dbInstance);
+        setIsFirstLaunch(!seenOnboarding);
+
+        // 4. Hydrate zustand store with all data
         await loadFromDB(dbInstance);
 
         setIsReady(true);
       } catch (e) {
         setError(e instanceof Error ? e : new Error(String(e)));
       } finally {
-        // 4. Hide splash screen regardless of success/failure
+        // 5. Hide splash screen regardless of success/failure
         await SplashScreen.hideAsync();
       }
     }
@@ -50,5 +56,5 @@ export function useBootLoader() {
     boot();
   }, [loadFromDB]);
 
-  return { isReady, error };
+  return { isReady, isFirstLaunch, error };
 }
