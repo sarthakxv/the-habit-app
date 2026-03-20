@@ -12,9 +12,11 @@ interface HabitCardProps {
   streakCount: number;
   onToggle: () => void;
   onPress: () => void;
+  onLongPress?: () => void;
+  disabled?: boolean;
 }
 
-export function HabitCard({ habit, isCompleted, streakCount, onToggle, onPress }: HabitCardProps) {
+export function HabitCard({ habit, isCompleted, streakCount, onToggle, onPress, onLongPress, disabled }: HabitCardProps) {
   const colors = useThemeColors();
 
   return (
@@ -29,6 +31,8 @@ export function HabitCard({ habit, isCompleted, streakCount, onToggle, onPress }
         isCompleted && { opacity: 0.7 },
       ]}
       onPress={onPress}
+      onLongPress={onLongPress}
+      disabled={disabled}
     >
       {/* Left color stripe */}
       <View style={[styles.colorStripe, { backgroundColor: habit.color }]} />

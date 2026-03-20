@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DraggableFlatList, { type RenderItemParams } from 'react-native-draggable-flatlist';
 import { useHabitStore } from '@/src/store/habitStore';
 import { selectTodayHabits, selectTodayProgress, selectIsCompletedToday, selectCurrentStreak } from '@/src/store/selectors';
 import { getToday, formatDate } from '@/src/utils/dates';
@@ -16,6 +17,48 @@ import { neo } from '@/src/constants/theme';
 import { subDays, addDays, parseISO } from 'date-fns';
 import { useToast } from '@/src/components/Toast';
 import type { Habit } from '@/src/types';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+
+function DraggableHabitCard({
+  habit,
+  isCompleted,
+  streakCount,
+  onToggle,
+  onPress,
+  drag,
+  isActive,
+}: {
+  habit: Habit;
+  isCompleted: boolean;
+  streakCount: number;
+  onToggle: () => void;
+  onPress: () => void;
+  drag: () => void;
+  isActive: boolean;
+}) {
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withSpring(isActive ? 1.04 : 1, { damping: 20, stiffness: 200 }) }],
+    opacity: withSpring(isActive ? 1 : 1, { damping: 20 }),
+    shadowOffset: { width: isActive ? 5 : 3, height: isActive ? 5 : 3 },
+    shadowOpacity: isActive ? 0.4 : 0,
+    shadowRadius: isActive ? 0 : 0,
+    zIndex: isActive ? 999 : 0,
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <HabitCard
+        habit={habit}
+        isCompleted={isCompleted}
+        streakCount={streakCount}
+        onToggle={onToggle}
+        onPress={onPress}
+        onLongPress={drag}
+        disabled={isActive}
+      />
+    </Animated.View>
+  );
+}
 
 export default function TodayScreen() {
   const router = useRouter();
@@ -24,6 +67,7 @@ export default function TodayScreen() {
   const habits = useHabitStore((s) => s.habits);
   const completions = useHabitStore((s) => s.completions);
   const toggleCompletion = useHabitStore((s) => s.toggleCompletion);
+  const reorderHabits = useHabitStore((s) => s.reorderHabits);
 
   const { showToast } = useToast();
   const todayHabits = selectTodayHabits(selectedDate);
@@ -55,16 +99,28 @@ export default function TodayScreen() {
     router.push('/habit/new');
   }, [habits.length, router]);
 
-  const renderHabitCard = useCallback(({ item }: { item: Habit }) => {
+  const handleDragEnd = useCallback(async ({ data }: { data: Habit[] }) => {
+    try {
+      const db = getDatabase();
+      const orderedIds = data.map((h) => h.id);
+      await reorderHabits(db, orderedIds);
+    } catch {
+      showToast('Could not reorder habits. Please try again.');
+    }
+  }, [reorderHabits, showToast]);
+
+  const renderHabitCard = useCallback(({ item, drag, isActive }: RenderItemParams<Habit>) => {
     const isCompleted = selectIsCompletedToday(item.id, selectedDate);
     const streak = selectCurrentStreak(item.id, selectedDate);
     return (
-      <HabitCard
+      <DraggableHabitCard
         habit={item}
         isCompleted={isCompleted}
         streakCount={streak.count}
         onToggle={() => handleToggle(item.id)}
         onPress={() => router.push(`/habit/${item.id}`)}
+        drag={drag}
+        isActive={isActive}
       />
     );
   }, [selectedDate, handleToggle, router]);
@@ -108,13 +164,16 @@ export default function TodayScreen() {
         {isToday ? "TODAY'S TASKS" : 'TASKS'}
       </Text>
 
-      {/* Habit list */}
-      <FlatList
+      {/* Habit list — draggable only on Today view */}
+      <DraggableFlatList
         data={todayHabits}
         keyExtractor={(item) => item.id}
         renderItem={renderHabitCard}
+        onDragEnd={handleDragEnd}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        activationDistance={isToday ? 0 : 999}
+        containerStyle={styles.dragContainer}
       />
 
       {/* FAB */}
@@ -161,6 +220,9 @@ const styles = StyleSheet.create({
   list: {
     paddingTop: 4,
     paddingBottom: 100,
+  },
+  dragContainer: {
+    flex: 1,
   },
   fab: {
     position: 'absolute',

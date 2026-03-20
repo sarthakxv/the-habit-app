@@ -3,6 +3,7 @@ import { DefaultTheme, ThemeProvider, type Theme } from '@react-navigation/nativ
 import { Redirect, Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Text, View } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { useBootLoader } from '@/src/hooks/useBootLoader';
@@ -60,42 +61,44 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={NeoBrutLightTheme}>
-      <ToastProvider>
-        <Stack
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: '#EDE8F5',
-            },
-            headerTitleStyle: {
-              fontWeight: '800',
-              color: '#1B1A2E',
-            },
-            headerShadowVisible: false,
-            headerTintColor: '#1B1A2E',
-            headerBackButtonDisplayMode: 'minimal',
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="onboarding"
-            options={{ headerShown: false, gestureEnabled: false }}
-          />
-          <Stack.Screen
-            name="habit/new"
-            options={{ presentation: 'modal', title: 'New Habit' }}
-          />
-          <Stack.Screen
-            name="habit/[id]"
-            options={{ title: 'Habit Detail' }}
-          />
-          <Stack.Screen
-            name="privacy-policy"
-            options={{ title: 'Privacy Policy' }}
-          />
-        </Stack>
-        {isFirstLaunch && <Redirect href="/onboarding" />}
-      </ToastProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider value={NeoBrutLightTheme}>
+        <ToastProvider>
+          <Stack
+            screenOptions={{
+              headerStyle: {
+                backgroundColor: '#EDE8F5',
+              },
+              headerTitleStyle: {
+                fontWeight: '800',
+                color: '#1B1A2E',
+              },
+              headerShadowVisible: false,
+              headerTintColor: '#1B1A2E',
+              headerBackButtonDisplayMode: 'minimal',
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="onboarding"
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
+            <Stack.Screen
+              name="habit/new"
+              options={{ presentation: 'modal', title: 'New Habit' }}
+            />
+            <Stack.Screen
+              name="habit/[id]"
+              options={{ title: 'Habit Detail' }}
+            />
+            <Stack.Screen
+              name="privacy-policy"
+              options={{ title: 'Privacy Policy' }}
+            />
+          </Stack>
+          {isFirstLaunch && <Redirect href="/onboarding" />}
+        </ToastProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
