@@ -108,6 +108,7 @@ export const useHabitStore = create<HabitState>((set, get) => ({
     // DB first, then store
     await insertHabit(db, habit);
     set({ habits: [...habits, habit] });
+
     return habit;
   },
 
@@ -124,16 +125,16 @@ export const useHabitStore = create<HabitState>((set, get) => ({
   },
 
   archiveHabit: async (db, id) => {
+    const { habits } = get();
+    const habit = habits.find((h) => h.id === id);
+
     await dbArchiveHabit(db, id);
-    set((state) => {
-      const habit = state.habits.find((h) => h.id === id);
-      return {
-        habits: state.habits.filter((h) => h.id !== id),
-        archivedHabits: habit
-          ? [...state.archivedHabits, { ...habit, archived: true }]
-          : state.archivedHabits,
-      };
-    });
+    set((state) => ({
+      habits: state.habits.filter((h) => h.id !== id),
+      archivedHabits: habit
+        ? [...state.archivedHabits, { ...habit, archived: true }]
+        : state.archivedHabits,
+    }));
   },
 
   unarchiveHabit: async (db, id) => {

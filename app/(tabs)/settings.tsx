@@ -16,6 +16,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { showToast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
   const habits = useHabitStore((s) => s.habits);
   const archivedHabits = useHabitStore((s) => s.archivedHabits);
   const completions = useHabitStore((s) => s.completions);

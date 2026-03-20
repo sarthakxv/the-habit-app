@@ -1,4 +1,7 @@
-import { hasSeenOnboarding, markOnboardingSeen } from '../../src/db/settings';
+import {
+  hasSeenOnboarding,
+  markOnboardingSeen,
+} from '../../src/db/settings';
 import { createMockDatabase } from '../helpers/mockDatabase';
 
 describe('settings', () => {
