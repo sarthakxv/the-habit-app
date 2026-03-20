@@ -7,11 +7,16 @@ import { getDatabase } from '@/src/hooks/useBootLoader';
 import { ColorPicker } from '@/src/components/ColorPicker';
 import { IconPicker } from '@/src/components/IconPicker';
 import { DaySelector } from '@/src/components/DaySelector';
+import { ReminderTimePicker } from '@/src/components/ReminderTimePicker';
 import { HABIT_COLORS } from '@/src/constants/colors';
 import { HABIT_ICONS } from '@/src/constants/icons';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { neo } from '@/src/constants/theme';
 import type { HabitFrequency } from '@/src/types';
+import {
+  scheduleHabitReminder,
+  requestNotificationPermissions,
+} from '@/src/utils/notifications';
 
 export default function NewHabitScreen() {
   const router = useRouter();
@@ -23,6 +28,7 @@ export default function NewHabitScreen() {
   const [icon, setIcon] = useState<string>(HABIT_ICONS[0]);
   const [frequencyType, setFrequencyType] = useState<'daily' | 'weekly'>('daily');
   const [weeklyDays, setWeeklyDays] = useState<number[]>([1, 2, 3, 4, 5]);
+  const [reminderTime, setReminderTime] = useState<string | null>(null);
 
   const handleDayToggle = useCallback((day: number) => {
     setWeeklyDays((prev) =>
@@ -48,19 +54,29 @@ export default function NewHabitScreen() {
 
     try {
       const db = getDatabase();
-      await addHabit(db, {
+      const habit = await addHabit(db, {
         name: name.trim(),
         color,
         icon,
         frequency,
-        reminderTime: null,
+        reminderTime,
       });
+
+      // Schedule notification if reminder time was set
+      if (reminderTime) {
+        const hasPermission = await requestNotificationPermissions();
+        if (hasPermission) {
+          const notificationId = await scheduleHabitReminder(habit.name, reminderTime, frequency);
+          await useHabitStore.getState().updateHabit(db, habit.id, { notificationId });
+        }
+      }
+
       router.back();
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Something went wrong';
       Alert.alert('Error', message);
     }
-  }, [name, color, icon, frequencyType, weeklyDays, addHabit, router]);
+  }, [name, color, icon, frequencyType, weeklyDays, reminderTime, addHabit, router]);
 
   return (
     <ScrollView
@@ -139,6 +155,10 @@ export default function NewHabitScreen() {
       {frequencyType === 'weekly' && (
         <DaySelector selected={weeklyDays} onToggle={handleDayToggle} />
       )}
+
+      {/* Reminder */}
+      <Text style={[styles.label, { color: colors.text }]}>Reminder</Text>
+      <ReminderTimePicker value={reminderTime} onChange={setReminderTime} />
 
       {/* Save */}
       <Pressable

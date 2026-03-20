@@ -9,9 +9,15 @@ import { getToday } from '@/src/utils/dates';
 import { getDatabase } from '@/src/hooks/useBootLoader';
 import { StreakBadge } from '@/src/components/StreakBadge';
 import { HabitIcon } from '@/src/components/HabitIcon';
+import { ReminderTimePicker } from '@/src/components/ReminderTimePicker';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { neo } from '@/src/constants/theme';
 import { eachDayBackward } from '@/src/utils/dates';
+import {
+  scheduleHabitReminder,
+  cancelHabitReminder,
+  requestNotificationPermissions,
+} from '@/src/utils/notifications';
 
 export default function HabitDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,6 +29,7 @@ export default function HabitDetailScreen() {
   const completions = useHabitStore((s) => s.completions[id ?? ''] ?? new Set());
   const toggleCompletion = useHabitStore((s) => s.toggleCompletion);
   const archiveHabit = useHabitStore((s) => s.archiveHabit);
+  const updateHabit = useHabitStore((s) => s.updateHabit);
 
   if (!habit || !id) {
     return (
@@ -47,6 +54,34 @@ export default function HabitDetailScreen() {
       // TODO: Show toast
     }
   }, [id, today, isCompleted, toggleCompletion]);
+
+  const handleReminderChange = useCallback(async (time: string | null) => {
+    if (!habit || !id) return;
+    const db = getDatabase();
+    try {
+      // Cancel previous notification if any
+      if (habit.notificationId) {
+        await cancelHabitReminder(habit.notificationId);
+      }
+
+      let newNotificationId: string | null = null;
+      if (time) {
+        const hasPermission = await requestNotificationPermissions();
+        if (!hasPermission) {
+          Alert.alert(
+            'Permission Required',
+            'Please enable notifications in Settings to use reminders.',
+          );
+          return;
+        }
+        newNotificationId = await scheduleHabitReminder(habit.name, time, habit.frequency);
+      }
+
+      await updateHabit(db, id, { reminderTime: time, notificationId: newNotificationId });
+    } catch {
+      Alert.alert('Error', 'Could not update reminder. Please try again.');
+    }
+  }, [id, habit, updateHabit]);
 
   const handleArchive = useCallback(() => {
     Alert.alert(
@@ -147,6 +182,10 @@ export default function HabitDetailScreen() {
           })}
         </View>
       </View>
+
+      {/* Reminder */}
+      <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>REMINDER</Text>
+      <ReminderTimePicker value={habit.reminderTime} onChange={handleReminderChange} />
 
       {/* Edit button */}
       <Pressable
