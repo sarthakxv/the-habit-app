@@ -19,6 +19,7 @@ import {
   cancelHabitReminder,
   requestNotificationPermissions,
 } from '@/src/utils/notifications';
+import { useToast } from '@/src/components/Toast';
 
 export default function HabitDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -32,6 +33,7 @@ export default function HabitDetailScreen() {
   const toggleCompletion = useHabitStore((s) => s.toggleCompletion);
   const archiveHabit = useHabitStore((s) => s.archiveHabit);
   const updateHabit = useHabitStore((s) => s.updateHabit);
+  const { showToast } = useToast();
   const [editModalVisible, setEditModalVisible] = useState(false);
 
   const isCompleted = id ? selectIsCompletedToday(id, today) : false;
@@ -47,9 +49,9 @@ export default function HabitDetailScreen() {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       }
     } catch {
-      // TODO: Show toast
+      showToast('Could not update habit. Please try again.');
     }
-  }, [id, today, isCompleted, toggleCompletion]);
+  }, [id, today, isCompleted, toggleCompletion, showToast]);
 
   const handleReminderChange = useCallback(async (time: string | null) => {
     if (!habit || !id) return;
@@ -63,10 +65,7 @@ export default function HabitDetailScreen() {
       if (time) {
         const hasPermission = await requestNotificationPermissions();
         if (!hasPermission) {
-          Alert.alert(
-            'Permission Required',
-            'Please enable notifications in Settings to use reminders.',
-          );
+          showToast('Please enable notifications in Settings to use reminders.');
           return;
         }
         newNotificationId = await scheduleHabitReminder(habit.name, time, habit.frequency);
@@ -74,9 +73,9 @@ export default function HabitDetailScreen() {
 
       await updateHabit(db, id, { reminderTime: time, notificationId: newNotificationId });
     } catch {
-      Alert.alert('Error', 'Could not update reminder. Please try again.');
+      showToast('Could not update reminder. Please try again.');
     }
-  }, [id, habit, updateHabit]);
+  }, [id, habit, updateHabit, showToast]);
 
   const handleArchive = useCallback(() => {
     if (!id) return;
@@ -94,7 +93,7 @@ export default function HabitDetailScreen() {
               await archiveHabit(db, id);
               router.back();
             } catch {
-              Alert.alert('Error', 'Something went wrong, try again.');
+              showToast('Could not archive habit. Please try again.');
             }
           },
         },

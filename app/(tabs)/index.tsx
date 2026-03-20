@@ -14,6 +14,7 @@ import { PerfectDayBanner } from '@/src/components/PerfectDayBanner';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { neo } from '@/src/constants/theme';
 import { subDays, addDays, parseISO } from 'date-fns';
+import { useToast } from '@/src/components/Toast';
 import type { Habit } from '@/src/types';
 
 export default function TodayScreen() {
@@ -24,6 +25,7 @@ export default function TodayScreen() {
   const completions = useHabitStore((s) => s.completions);
   const toggleCompletion = useHabitStore((s) => s.toggleCompletion);
 
+  const { showToast } = useToast();
   const todayHabits = selectTodayHabits(selectedDate);
   const progress = selectTodayProgress(selectedDate);
   const isToday = selectedDate === getToday();
@@ -34,9 +36,9 @@ export default function TodayScreen() {
       const db = getDatabase();
       await toggleCompletion(db, habitId, selectedDate);
     } catch {
-      // TODO: Show toast
+      showToast('Could not update habit. Please try again.');
     }
-  }, [selectedDate, toggleCompletion]);
+  }, [selectedDate, toggleCompletion, showToast]);
 
   const handleNavigateDay = useCallback((direction: -1 | 1) => {
     if (direction === 1 && isToday) return;

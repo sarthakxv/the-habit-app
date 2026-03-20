@@ -7,6 +7,7 @@ import 'react-native-reanimated';
 
 import { useBootLoader } from '@/src/hooks/useBootLoader';
 import { configureNotificationHandler, requestNotificationPermissions } from '@/src/utils/notifications';
+import { ToastProvider } from '@/src/components/Toast';
 
 // Configure how notifications appear when app is foregrounded (must run at module load)
 configureNotificationHandler();
@@ -60,35 +61,37 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={NeoBrutLightTheme}>
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#EDE8F5',
-          },
-          headerTitleStyle: {
-            fontWeight: '800',
-            color: '#1B1A2E',
-          },
-          headerShadowVisible: false,
-          headerTintColor: '#1B1A2E',
-          headerBackButtonDisplayMode: 'minimal',
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen
-          name="onboarding"
-          options={{ headerShown: false, gestureEnabled: false }}
-        />
-        <Stack.Screen
-          name="habit/new"
-          options={{ presentation: 'modal', title: 'New Habit' }}
-        />
-        <Stack.Screen
-          name="habit/[id]"
-          options={{ title: 'Habit Detail' }}
-        />
-      </Stack>
-      {isFirstLaunch && <Redirect href="/onboarding" />}
+      <ToastProvider>
+        <Stack
+          screenOptions={{
+            headerStyle: {
+              backgroundColor: '#EDE8F5',
+            },
+            headerTitleStyle: {
+              fontWeight: '800',
+              color: '#1B1A2E',
+            },
+            headerShadowVisible: false,
+            headerTintColor: '#1B1A2E',
+            headerBackButtonDisplayMode: 'minimal',
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="onboarding"
+            options={{ headerShown: false, gestureEnabled: false }}
+          />
+          <Stack.Screen
+            name="habit/new"
+            options={{ presentation: 'modal', title: 'New Habit' }}
+          />
+          <Stack.Screen
+            name="habit/[id]"
+            options={{ title: 'Habit Detail' }}
+          />
+        </Stack>
+        {isFirstLaunch && <Redirect href="/onboarding" />}
+      </ToastProvider>
     </ThemeProvider>
   );
 }

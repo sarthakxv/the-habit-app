@@ -123,3 +123,8 @@ export async function cancelAllHabitReminders(habits: Pick<Habit, 'notificationI
     .map((h) => cancelHabitReminder(h.notificationId!));
   await Promise.all(cancellations);
 }
+
+/** Cancel every scheduled notification (e.g. when disabling reminders globally). */
+export async function cancelAllNotifications(): Promise<void> {
+  await Notifications.cancelAllScheduledNotificationsAsync();
+}

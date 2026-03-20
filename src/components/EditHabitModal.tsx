@@ -26,6 +26,7 @@ import {
   cancelHabitReminder,
   requestNotificationPermissions,
 } from '@/src/utils/notifications';
+import { useToast } from '@/src/components/Toast';
 
 interface Props {
   habit: Habit;
@@ -34,6 +35,7 @@ interface Props {
 
 export function EditHabitModal({ habit, onClose }: Props) {
   const colors = useThemeColors();
+  const { showToast } = useToast();
   const updateHabit = useHabitStore((s) => s.updateHabit);
 
   const [name, setName] = useState(habit.name);
@@ -84,10 +86,7 @@ export function EditHabitModal({ habit, onClose }: Props) {
         if (reminderTime) {
           const hasPermission = await requestNotificationPermissions();
           if (!hasPermission) {
-            Alert.alert(
-              'Permission Required',
-              'Please enable notifications in Settings to use reminders.'
-            );
+            showToast('Please enable notifications in Settings to use reminders.');
             return;
           }
           newNotificationId = await scheduleHabitReminder(name.trim(), reminderTime, frequency);
@@ -105,9 +104,9 @@ export function EditHabitModal({ habit, onClose }: Props) {
 
       onClose();
     } catch {
-      Alert.alert('Error', 'Could not save changes. Please try again.');
+      showToast('Could not save changes. Please try again.');
     }
-  }, [name, color, icon, frequencyType, weeklyDays, reminderTime, habit, updateHabit, onClose]);
+  }, [name, color, icon, frequencyType, weeklyDays, reminderTime, habit, updateHabit, onClose, showToast]);
 
   return (
     <Modal visible animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>

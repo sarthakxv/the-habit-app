@@ -7,11 +7,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useHabitStore } from '@/src/store/habitStore';
 import { getDatabase } from '@/src/hooks/useBootLoader';
 import { cancelAllNotifications } from '@/src/utils/notifications';
+import { useToast } from '@/src/components/Toast';
 import { useThemeColors } from '@/src/hooks/useThemeColors';
 import { neo } from '@/src/constants/theme';
 
 export default function SettingsScreen() {
   const colors = useThemeColors();
+  const { showToast } = useToast();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const habits = useHabitStore((s) => s.habits);
   const archivedHabits = useHabitStore((s) => s.archivedHabits);
@@ -30,12 +32,12 @@ export default function SettingsScreen() {
             const db = getDatabase();
             await unarchiveHabit(db, id);
           } catch {
-            Alert.alert('Error', 'Could not restore habit. Please try again.');
+            showToast('Could not restore habit. Please try again.');
           }
         },
       },
     ]);
-  }, [unarchiveHabit]);
+  }, [unarchiveHabit, showToast]);
 
   const handleDeleteForever = useCallback((id: string, name: string) => {
     Alert.alert(
@@ -51,13 +53,13 @@ export default function SettingsScreen() {
               const db = getDatabase();
               await deleteHabitPermanently(db, id);
             } catch {
-              Alert.alert('Error', 'Could not delete habit. Please try again.');
+              showToast('Could not delete habit. Please try again.');
             }
           },
         },
       ]
     );
-  }, [deleteHabitPermanently]);
+  }, [deleteHabitPermanently, showToast]);
 
   const handleNotificationToggle = useCallback(async (value: boolean) => {
     setNotificationsEnabled(value);
@@ -91,9 +93,9 @@ export default function SettingsScreen() {
         });
       }
     } catch {
-      Alert.alert('Error', 'Failed to export data.');
+      showToast('Failed to export data.');
     }
-  }, [habits, completions, freezes]);
+  }, [habits, completions, freezes, showToast]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>

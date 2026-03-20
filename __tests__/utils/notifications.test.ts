@@ -4,6 +4,7 @@ import {
   scheduleHabitReminder,
   cancelHabitReminder,
   cancelAllHabitReminders,
+  cancelAllNotifications,
   requestNotificationPermissions,
 } from '@/src/utils/notifications';
 import type { HabitFrequency } from '@/src/types';
@@ -15,6 +16,7 @@ const mockGetPermissions = jest.fn();
 const mockRequestPermissions = jest.fn();
 const mockSetNotificationHandler = jest.fn();
 const mockSetNotificationChannelAsync = jest.fn();
+const mockCancelAllNotifications = jest.fn();
 
 jest.mock('expo-notifications', () => ({
   SchedulableTriggerInputTypes: {
@@ -27,6 +29,7 @@ jest.mock('expo-notifications', () => ({
   requestPermissionsAsync: (...args: unknown[]) => mockRequestPermissions(...args),
   setNotificationHandler: (...args: unknown[]) => mockSetNotificationHandler(...args),
   setNotificationChannelAsync: (...args: unknown[]) => mockSetNotificationChannelAsync(...args),
+  cancelAllScheduledNotificationsAsync: (...args: unknown[]) => mockCancelAllNotifications(...args),
   AndroidImportance: { HIGH: 4 },
 }));
 
@@ -227,5 +230,15 @@ describe('cancelAllHabitReminders', () => {
   it('handles empty habits array gracefully', async () => {
     await cancelAllHabitReminders([]);
     expect(mockCancelNotification).not.toHaveBeenCalled();
+  });
+});
+
+// ─── cancelAllNotifications ──────────────────────────────────────────────────
+
+describe('cancelAllNotifications', () => {
+  it('cancels all scheduled notifications globally', async () => {
+    mockCancelAllNotifications.mockResolvedValue(undefined);
+    await cancelAllNotifications();
+    expect(mockCancelAllNotifications).toHaveBeenCalledTimes(1);
   });
 });

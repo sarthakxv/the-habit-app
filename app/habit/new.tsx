@@ -17,11 +17,13 @@ import {
   scheduleHabitReminder,
   requestNotificationPermissions,
 } from '@/src/utils/notifications';
+import { useToast } from '@/src/components/Toast';
 
 export default function NewHabitScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const colors = useThemeColors();
+  const { showToast } = useToast();
   const addHabit = useHabitStore((s) => s.addHabit);
 
   const [name, setName] = useState('');
@@ -81,10 +83,10 @@ export default function NewHabitScreen() {
       }
     } catch (e) {
       setSaving(false);
-      const message = e instanceof Error ? e.message : 'Something went wrong';
-      Alert.alert('Error', message);
+      const message = e instanceof Error ? e.message : 'Could not save habit. Please try again.';
+      showToast(message);
     }
-  }, [name, color, icon, frequencyType, weeklyDays, reminderTime, addHabit, router, navigation]);
+  }, [name, color, icon, frequencyType, weeklyDays, reminderTime, addHabit, router, navigation, showToast]);
 
   return (
     <ScrollView
